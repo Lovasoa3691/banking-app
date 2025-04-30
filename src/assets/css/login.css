@@ -1,0 +1,55 @@
+.container{
+    padding: 30px;
+    padding-bottom: 30px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    width: 450px;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    text-align: center;
+}
+
+.text-bold{
+    font-weight: bold;
+}
+
+.container .col{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.container .row{
+    text-align: start;
+    margin-bottom: 10px;
+}
+
+.container .row label{
+    font-weight: bold;
+}
+
+.container .row input{
+    padding: 10px;
+    border-style: ridge;
+    border-radius: 5px;
+    border-color: rgb(241, 241, 241);
+    width: calc(100% - 30px);
+}
+
+.container .row button{
+    padding: 10px;
+    border-radius: 5px;
+    background-color: black;
+    color: white;
+    width: calc(100%);
+}
+
+.container .text-primary{
+    float: left;
+    color: rgb(36, 36, 255);
+}

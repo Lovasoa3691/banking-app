@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Banque</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="h-screen bg-gray-100">
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+        style="
+          background-color: rgb(24, 24, 24);
+          color: white;
+          font-weight: bold;
+        "
+        class="text-white w-80 p-4 space-y-4 absolute inset-y-0 left-0 transform -translate-x-full transition-transform duration-200 ease-in-out md:relative md:translate-x-0 md:flex md:flex-col"
+      >
+        <h2 class="text-2xl font-bold">Ma Banque</h2>
+        <nav class="flex flex-col space-y-2">
+          <button
+            onclick="showContent('dashboard')"
+            class="text-left hover:bg-blue-600 px-4 py-2 rounded"
+          >
+            🏠 Tableau de bord
+          </button>
+          <button
+            onclick="showContent('virement')"
+            class="text-left hover:bg-blue-600 px-4 py-2 rounded"
+          >
+            💸 Virement / Transfert
+          </button>
+          <button
+            onclick="showContent('retrait')"
+            class="text-left hover:bg-blue-600 px-4 py-2 rounded"
+          >
+            🏧 Retrait
+          </button>
+          <button
+            onclick="showContent('pret')"
+            class="text-left hover:bg-blue-600 px-4 py-2 rounded"
+          >
+            🏦 Prêt
+          </button>
+          <button
+            onclick="showContent('securite')"
+            class="text-left hover:bg-blue-600 px-4 py-2 rounded"
+          >
+            🔐 Sécurité
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="flex flex-col flex-1 w-full">
+        <!-- TopBar -->
+        <header
+          style="
+            background-color: rgb(24, 24, 24);
+            color: white;
+            font-weight: bold;
+          "
+          class="bg-white shadow p-6 flex justify-between items-center"
+        >
+          <button
+            onclick="toggleSidebar()"
+            class="md:hidden text-white focus:outline-none"
+          >
+            ☰
+          </button>
+          <h1 class="text-xl font-bold">F-BANKY</h1>
+          <span class="text-white">fenonantenaikolovasoa@gmail.com</span>
+        </header>
+
+        <!-- CenterBar -->
+        <main id="content" class="flex-1 overflow-y-auto p-20 bg-gray-50">
+          <!-- Section par défaut -->
+          <div id="dashboard" class="content-section">
+            <h2 class="text-2xl font-semibold mb-4">Tableau de bord</h2>
+            <div
+              class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6"
+            >
+              <div class="bg-white p-6 rounded-xl shadow">
+                <h3 class="text-2xl font-semibold text-gray-700">
+                  Informations utilisateurs
+                </h3>
+                <p class="text-2sm text-dark font-bold mt-2">
+                  FENONANTENAIKO Lovasoa Gilbert Juliannot
+                </p>
+                <p class="text-2sm text-dark font-bold mt-2">
+                  Compte : 1234 4567 9874 0000
+                </p>
+                <p class="text-2sm text-dark font-bold mt-2">
+                  <select name="" id="" class="w-full p-2 border rounded">
+                    <option value="">Compte courant</option>
+                    <option value="">Compte epargne</option>
+                  </select>
+                </p>
+                <p class="text-2sm text-dark font-bold mt-2">
+                  Ouvert le : 21/04/2019
+                </p>
+              </div>
+
+              <div
+                class="bg-white p-6 rounded-xl shadow flex justify-center items-center"
+              >
+                <div class="flex flex-row items-center gap-4">
+                  <img src="" width="100" height="100" alt="" />
+                  <p>
+                    <span class="text-2xl">Solde Actuel</span>
+                    <strong class="text-2xl">1,000,000.00 Ariary</strong>
+                  </p>
+                  <button class="border rounded p-2 bg-gray-50">
+                    Voir historique
+                  </button>
+                </div>
+              </div>
+
+              <div
+                class="bg-white p-6 rounded-xl shadow flex justify-center items-center"
+              >
+                <div class="flex flex-col items-center gap-4">
+                  <button
+                    class="p-2 bg-blue-700 text-white border w-48 rounded"
+                  >
+                    Retrait
+                  </button>
+                  <button
+                    class="p-2 bg-blue-700 text-white border w-48 rounded"
+                  >
+                    Retrait
+                  </button>
+                  <button
+                    class="p-2 bg-blue-700 text-white border w-48 rounded"
+                  >
+                    Retrait
+                  </button>
+                </div>
+              </div>
+
+              <!-- <div class="bg-white p-4 rounded-xl shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Entrées</h3>
+                <p class="text-2xl text-blue-600 font-bold mt-2">€4,200.00</p>
+              </div>
+
+              <div class="bg-white p-4 rounded-xl shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Sorties</h3>
+                <p class="text-2xl text-red-600 font-bold mt-2">€1,750.00</p>
+              </div> -->
+            </div>
+          </div>
+
+          <div id="virement" class="content-section hidden">
+            <h2 class="text-2xl font-semibold mb-4">💸 Virement / Transfert</h2>
+            <form class="bg-white p-6 rounded-xl shadow space-y-4">
+              <input
+                type="text"
+                placeholder="Nom du bénéficiaire"
+                class="w-full p-2 border rounded"
+              />
+              <input
+                type="text"
+                placeholder="Numéro de compte"
+                class="w-full p-2 border rounded"
+              />
+              <input
+                type="number"
+                placeholder="Montant (€)"
+                class="w-full p-2 border rounded"
+              />
+              <button
+                type="submit"
+                class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800"
+              >
+                Envoyer
+              </button>
+            </form>
+
+            <div class="bg-white p-4 rounded-xl shadow">
+              <h3 class="text-lg font-semibold mb-2">
+                Historique des virements
+              </h3>
+              <div class="overflow-x-auto">
+                <table
+                  class="min-w-full table-auto text-sm text-left text-gray-700"
+                >
+                  <thead class="bg-blue-100">
+                    <tr>
+                      <th class="px-4 py-2">Date</th>
+                      <th class="px-4 py-2">Bénéficiaire</th>
+                      <th class="px-4 py-2">Montant (€)</th>
+                      <th class="px-4 py-2">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b">
+                      <td class="px-4 py-2">23/04/2025</td>
+                      <td class="px-4 py-2">Alice Martin</td>
+                      <td class="px-4 py-2">150.00</td>
+                      <td class="px-4 py-2 text-green-600">Réussi</td>
+                    </tr>
+                    <!-- D'autres lignes ici -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div id="retrait" class="content-section hidden">
+            <h2 class="text-2xl font-semibold mb-4">🏧 Retrait</h2>
+            <form class="bg-white p-6 rounded-xl shadow space-y-4">
+              <input
+                type="number"
+                placeholder="Montant à retirer (€)"
+                class="w-full p-2 border rounded"
+              />
+              <select class="w-full p-2 border rounded">
+                <option>Distributeur</option>
+                <option>Agence</option>
+              </select>
+              <button
+                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+                Valider le retrait
+              </button>
+            </form>
+
+            <div class="bg-white p-4 rounded-xl shadow">
+              <h3 class="text-lg font-semibold mb-2">
+                Historique des virements
+              </h3>
+              <div class="overflow-x-auto">
+                <table
+                  class="min-w-full table-auto text-sm text-left text-gray-700"
+                >
+                  <thead class="bg-blue-100">
+                    <tr>
+                      <th class="px-4 py-2">Date</th>
+                      <th class="px-4 py-2">Bénéficiaire</th>
+                      <th class="px-4 py-2">Montant (€)</th>
+                      <th class="px-4 py-2">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b">
+                      <td class="px-4 py-2">23/04/2025</td>
+                      <td class="px-4 py-2">Alice Martin</td>
+                      <td class="px-4 py-2">150.00</td>
+                      <td class="px-4 py-2 text-green-600">Réussi</td>
+                    </tr>
+                    <!-- D'autres lignes ici -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div id="pret" class="content-section hidden">
+            <h2 class="text-2xl font-semibold mb-4">🏦 Prêt</h2>
+            <form class="bg-white p-6 rounded-xl shadow space-y-4">
+              <input
+                type="number"
+                placeholder="Montant demandé (€)"
+                class="w-full p-2 border rounded"
+              />
+              <input
+                type="number"
+                placeholder="Durée (mois)"
+                class="w-full p-2 border rounded"
+              />
+              <textarea
+                placeholder="Motif du prêt"
+                class="w-full p-2 border rounded"
+              ></textarea>
+              <button
+                class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+              >
+                Soumettre la demande
+              </button>
+            </form>
+
+            <br /><br />
+            <div class="bg-white p-4 rounded-xl shadow">
+              <h3 class="text-lg font-semibold mb-2">
+                Historique des virements
+              </h3>
+              <div class="overflow-x-auto">
+                <table
+                  class="min-w-full table-auto text-sm text-left text-gray-700"
+                >
+                  <thead class="bg-blue-100">
+                    <tr>
+                      <th class="px-4 py-2">Date</th>
+                      <th class="px-4 py-2">Bénéficiaire</th>
+                      <th class="px-4 py-2">Montant (€)</th>
+                      <th class="px-4 py-2">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="border-b">
+                      <td class="px-4 py-2">23/04/2025</td>
+                      <td class="px-4 py-2">Alice Martin</td>
+                      <td class="px-4 py-2">150.00</td>
+                      <td class="px-4 py-2 text-green-600">Réussi</td>
+                    </tr>
+                    <!-- D'autres lignes ici -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div id="securite" class="content-section hidden">
+            <h2 class="text-2xl font-semibold mb-4">
+              🔐 Paramètres de Sécurité
+            </h2>
+            <form class="bg-white p-6 rounded-xl shadow space-y-4">
+              <input
+                type="password"
+                placeholder="Mot de passe actuel"
+                class="w-full p-2 border rounded"
+              />
+              <input
+                type="password"
+                placeholder="Nouveau mot de passe"
+                class="w-full p-2 border rounded"
+              />
+              <input
+                type="password"
+                placeholder="Confirmer le nouveau mot de passe"
+                class="w-full p-2 border rounded"
+              />
+              <button
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Changer le mot de passe
+              </button>
+            </form>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        sidebar.classList.toggle("-translate-x-full");
+      }
+
+      function showContent(sectionId) {
+        document.querySelectorAll(".content-section").forEach((section) => {
+          section.classList.add("hidden");
+        });
+        document.getElementById(sectionId).classList.remove("hidden");
+      }
+    </script>
+  </body>
+</html>

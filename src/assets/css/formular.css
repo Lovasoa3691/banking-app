@@ -1,0 +1,138 @@
+/* .form-group{
+    text-align: start;
+    padding: 10px;
+    color: white;
+}
+
+.form-group input, textarea{
+    width: 500px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: white;
+    color: gray;
+}
+
+.form-group .col-form{
+    padding-bottom: 20px;
+    color: black;
+} */
+
+
+
+.container-data {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+}
+
+/* Formulaire */
+.withdraw-form {
+    text-align: start;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.withdraw-form h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #003c4d;
+}
+
+.withdraw-form input,
+.withdraw-form textarea {
+  width: calc(100% - 40px);
+  padding: 12px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+.withdraw-form input:focus,
+.withdraw-form textarea:focus {
+  border-color: #00bfa6;
+  outline: none;
+}
+
+.withdraw-form button {
+  background: #00bfa6;
+  color: white;
+  padding: 12px;
+  width: 150px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.withdraw-form button:hover {
+  background: #008f82;
+}
+
+/* Historique des transactions */
+.transaction-history {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.history-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.history-toolbar input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  flex: 1;
+  min-width: 100px;
+  margin-right: 1rem;
+}
+
+.actions button {
+  background: #f0f0f0;
+  border: none;
+  margin-left: 0.5rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.actions button:hover {
+  background: #e0e0e0;
+}
+
+/* Tableau */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table thead {
+  background-color: #00bfa6;
+  color: white;
+}
+
+table th,
+table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+table tbody tr:hover {
+  background-color: #f9f9f9;
+}

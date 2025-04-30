@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Profil et Sécurité</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f7f7f7;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      h2 {
+        margin-bottom: 20px;
+      }
+
+      section {
+        margin-bottom: 30px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: bold;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background-color: #0056b3;
+      }
+
+      .danger-zone {
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+
+      .btn-danger {
+        background-color: #dc3545;
+      }
+
+      .btn-danger:hover {
+        background-color: #b02a37;
+      }
+
+      .row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .col {
+        flex: 1;
+        min-width: 250px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Profil et Sécurité</h2>
+
+      <!-- Section Profil -->
+      <section>
+        <h3>Informations du Profil</h3>
+        <div class="row">
+          <div class="col">
+            <label>Nom complet</label>
+            <input type="text" value="Jean Dupont" />
+          </div>
+          <div class="col">
+            <label>Email</label>
+            <input type="email" value="jean@example.com" />
+          </div>
+          <div class="col">
+            <label>Téléphone</label>
+            <input type="text" value="+33600000000" />
+          </div>
+          <div class="col">
+            <label>Rôle</label>
+            <input type="text" value="Utilisateur" disabled />
+          </div>
+        </div>
+      </section>
+
+      <!-- Section Mot de passe -->
+      <section>
+        <h3>Changer le mot de passe</h3>
+        <input type="password" placeholder="Ancien mot de passe" />
+        <input type="password" placeholder="Nouveau mot de passe" />
+        <button class="btn">Mettre à jour</button>
+      </section>
+
+      <!-- Section Sécurité -->
+      <section>
+        <h3>Sécurité</h3>
+        <p><strong>2FA :</strong> <button class="btn">Activer</button></p>
+        <p>
+          <strong>Dernière connexion :</strong> 21 avril 2025 à 12h45 depuis IP
+          192.168.1.12
+        </p>
+      </section>
+
+      <!-- Zone dangereuse -->
+      <section class="danger-zone">
+        <h3 style="color: red">Zone sensible</h3>
+        <button class="btn btn-danger">Supprimer mon compte</button>
+      </section>
+    </div>
+  </body>
+</html>
