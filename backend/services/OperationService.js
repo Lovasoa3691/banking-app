@@ -13,6 +13,56 @@ class OperationService {
     });
   }
 
+  static async checkPin(num, pin) {
+    const compte = await Compte.findOne({
+      where: { NumCompte: num },
+    });
+    if (!compte) {
+      throw new Error("Compte introuvable");
+    }
+    if (compte.Pin !== pin) {
+      throw new Error("Code PIN incorrect");
+    }
+    return compte;
+  }
+
+  static async checkSolde(num, montant) {
+    const compte = await Compte.findOne({
+      where: { NumCompte: num },
+    });
+    if (!compte) {
+      throw new Error("Compte introuvable");
+    }
+    if (compte.Solde < montant) {
+      throw new Error("Solde insuffisant");
+    }
+    return compte;
+  }
+
+  static async updateSolde(num, montant) {
+    const compte = await Compte.findOne({
+      where: { NumCompte: num },
+    });
+    if (!compte) {
+      throw new Error("Compte introuvable");
+    }
+    compte.Solde -= montant;
+    await compte.save();
+    return compte;
+  }
+
+  static async updateSoldeVirement(num, montant) {
+    const compte = await Compte.findOne({
+      where: { NumCompte: num },
+    });
+    if (!compte) {
+      throw new Error("Compte introuvable");
+    }
+    compte.Solde -= montant;
+    await compte.save();
+    return compte;
+  }
+
   static async doSend(data) {
     return Operation.create({
       ...data,
@@ -42,8 +92,8 @@ class OperationService {
       where: { Discriminator: "Virement" },
       include: [
         {
-          model: Compte, // ou models.Compte si via index.js
-          as: "Compte", // doit correspondre à l'alias utilisé dans `belongsTo`
+          model: Compte,
+          as: "Compte",
         },
       ],
     });
@@ -52,6 +102,18 @@ class OperationService {
   static async getAllExchange(num) {
     return Operation.findAll({
       where: { NumCompte: num, Discriminator: "Pret" },
+    });
+  }
+
+  static async getAllExchangeData() {
+    return Operation.findAll({
+      where: { Discriminator: "Pret" },
+      include: [
+        {
+          model: Compte,
+          as: "Operations",
+        },
+      ],
     });
   }
 
@@ -65,7 +127,60 @@ class OperationService {
     return Operation.findAll({
       order: [["NumOp", "DESC"]],
       limit: 10,
+      // OperationService,
       where: { NumCompte: num },
+    });
+  }
+
+  static async updateStatusPret(id, statut) {
+    return Operation.update(
+      { StatusP: statut },
+      {
+        where: { NumOp: id },
+      }
+    );
+  }
+
+  static async getTotalRetrait() {
+    return Operation.sum("Montant", {
+      where: { Discriminator: "Retrait" },
+    });
+  }
+
+  static async getTotalRetraitByClient(num) {
+    return Operation.sum("Montant", {
+      where: { Discriminator: "Retrait", NumCompte: num },
+    });
+  }
+  static async getTotalVirementByClient(num) {
+    return Operation.sum("Montant", {
+      where: { Discriminator: "Virement", NumCompte: num },
+    });
+  }
+  static async getTotalPretByClient(num) {
+    return Operation.sum("Montant", {
+      where: { Discriminator: "Pret", NumCompte: num, StatusP: "Accepte" },
+    });
+  }
+
+  static async getTotalVirement() {
+    return Operation.sum("Montant", {
+      where: { Discriminator: "Virement" },
+    });
+  }
+
+  static async getTotalPret() {
+    return Operation.sum("Montant", {
+      where: { Discriminator: "Pret", StatusP: "Accepte" },
+    });
+  }
+
+  static async getCurrentOperation() {
+    return Operation.findAll({
+      order: [["NumOp", "DESC"]],
+      limit: 20,
+      // OperationService,
+      // where: { NumCompte: num },
     });
   }
 }

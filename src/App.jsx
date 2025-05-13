@@ -11,6 +11,7 @@ import NavBarAdmin from "./components/pages/admin/navbarAdmin";
 import axios from "axios";
 import ProtectedRoute from "./protectedRoute";
 import "./assets/css/modal.css";
+import LandingPage from "./components/pages/LandingPage";
 
 // axios.defaults.withCredentials = true;
 
@@ -21,7 +22,8 @@ function App() {
     <>
       <Router>
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
           <Route

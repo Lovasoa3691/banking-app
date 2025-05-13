@@ -11,7 +11,7 @@
     background-color: white;
 }
 
-.card{
+.card-box{
     border-radius: 10px;
     border-style: ridge;
     background-color: white;
@@ -23,7 +23,7 @@
     align-items: center;
 }
 
-.card:nth-child(1){
+.card-box:nth-child(1){
     border-radius: 10px;
     border-style: ridge;
     background-color: white;
@@ -35,7 +35,7 @@
     align-items: center;
 }
 
-.card:nth-child(2){
+.card-box:nth-child(2){
     border-radius: 10px;
     border-style: ridge;
     background-color: white;
@@ -60,7 +60,7 @@
     margin: auto;
 }*/
 
-.card:nth-child(3) button{
+.card-box:nth-child(3) button{
     background-color: rgb(2, 2, 224);
     color: white;
     border-radius: 10px;

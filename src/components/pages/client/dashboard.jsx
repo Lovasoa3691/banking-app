@@ -5,6 +5,7 @@ import BarChart from "../../../assets/chart/bar";
 import { Bar } from "react-chartjs-2";
 import LineChart from "../../../assets/chart/line";
 import api from "../../api/api";
+import LineChartClient from "../../../assets/chart/lineClient";
 
 const Dashboard = () => {
   const [user, setUser] = useState({});
@@ -61,7 +62,7 @@ const Dashboard = () => {
 
     <div className="dash-content">
       <div className="card-body">
-        <div className="card">
+        <div className="card-box">
           <span style={{ fontSize: "25px", fontWeight: "bold" }}>
             Infos utilisateur
           </span>
@@ -101,7 +102,7 @@ const Dashboard = () => {
           <span>Cree le : {clientInfo.DateOuverture}</span>
         </div>
 
-        <div className="card">
+        <div className="card-box">
           <div className="child-card">
             <div className="item">
               <img src={moneybag} width={70} height={70} alt="" />
@@ -110,7 +111,8 @@ const Dashboard = () => {
                 <span style={{ fontSize: "30px" }}>Solde actuel</span>
                 <br />
                 <strong style={{ fontSize: "40px" }}>
-                  {clientInfo.Solde} Ar
+                  {clientInfo.Solde}
+                  Ar
                 </strong>
               </div>
             </div>
@@ -120,7 +122,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="card">
+        <div className="card-box">
           <button type="button">
             {" "}
             <i className="fa-solid fa-chart-line"></i>&nbsp;&nbsp; Virement
@@ -139,7 +141,7 @@ const Dashboard = () => {
       <div>
         <div className="tableContent">
           <div className="connectivity">
-            <div className="card">
+            <div className="card-box">
               <span>Status de securite</span>
               <br />
               <br />
@@ -167,7 +169,7 @@ const Dashboard = () => {
           </div>
 
           <div className="table">
-            <LineChart />
+            <LineChartClient numCompte={clientInfo.NumCompte} />
           </div>
         </div>
 
@@ -185,7 +187,7 @@ const Dashboard = () => {
             <tbody>
               {listOperation && listOperation.length > 0 ? (
                 listOperation.map((item) => (
-                  <tr>
+                  <tr key={item.NumOp}>
                     <td>{item.DateOp}</td>
                     <td>{item.Discriminator}</td>
                     <td>

@@ -1,4 +1,5 @@
 const Compte = require("../models/Compte");
+const UtilisateurModel = require("../models/Utilisateur");
 const { Utilisateur } = require("../models");
 
 class CompteService {
@@ -12,8 +13,8 @@ class CompteService {
     return Compte.findAll({
       include: [
         {
-          model: Utilisateur, // ou models.Compte si via index.js
-          as: "Client", // doit correspondre à l'alias utilisé dans `belongsTo`
+          model: Utilisateur,
+          as: "Client",
         },
       ],
     });
@@ -31,10 +32,42 @@ class CompteService {
     });
   }
 
-  static async deleteCompte(idUt) {
-    return Compte.destroy({
-      where: { idUt },
+  static async deleteCompte(id) {
+    const compte = await Compte.findOne({
+      where: { NumCompte: id },
+      include: [
+        {
+          model: Utilisateur,
+          as: "Client",
+        },
+      ],
     });
+
+    if (!compte) {
+      throw new Error("Compte introuvable");
+    }
+
+    const client = compte.Client;
+
+    await compte.destroy();
+
+    if (client) {
+      const autresComptes = await Compte.findAll({
+        where: {
+          UtilisateurClient: client.IdUt,
+        },
+      });
+
+      if (autresComptes.length === 0) {
+        await client.destroy();
+      }
+    }
+
+    // if (client) {
+    //   await client.destroy();
+    // }
+
+    return true;
   }
 
   static async blockCompte(num, data) {
@@ -48,8 +81,8 @@ class CompteService {
       where: { Discriminator: "Courant" },
       include: [
         {
-          model: Utilisateur, // ou models.Compte si via index.js
-          as: "Client", // doit correspondre à l'alias utilisé dans `belongsTo`
+          model: Utilisateur,
+          as: "Client",
         },
       ],
     });
@@ -60,11 +93,19 @@ class CompteService {
       where: { Discriminator: "Epargne" },
       include: [
         {
-          model: Utilisateur, // ou models.Compte si via index.js
-          as: "Client", // doit correspondre à l'alias utilisé dans `belongsTo`
+          model: Utilisateur,
+          as: "Client",
         },
       ],
     });
+  }
+
+  static async getCompteCount() {
+    return await Compte.count();
+  }
+
+  static async getTotalCurrent() {
+    return await Compte.sum("Solde");
   }
 }
 

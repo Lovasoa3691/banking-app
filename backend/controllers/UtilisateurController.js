@@ -70,20 +70,28 @@ exports.createClient = async (req, res) => {
     };
 
     const newClient = await UtilisateurService.createClient(data);
-    res.status(201).json(newClient);
+    return res.status(201).json({
+      success: true,
+      message: "Client créé avec succès",
+      client: newClient,
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
 exports.deleteClient = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedClient = await ClientService.deleteClient(id);
+    const deletedClient = await UtilisateurService.deleteClient(id);
     if (!deletedClient) {
-      return res.status(404).json({ message: "Client non trouvé" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client non trouvé" });
     }
-    res.status(200).json({ message: "Client supprimé avec succès" });
+    return res
+      .status(200)
+      .json({ success: true, message: "Client supprimé avec succès" });
   } catch (error) {
     console.error(error);
   }
@@ -91,20 +99,24 @@ exports.deleteClient = async (req, res) => {
 
 exports.updateClient = async (req, res) => {
   const { id } = req.params;
-  const { Nom, Prenom, Adresse, Telephone, Cin, Profession } = req.body;
+  const { nom, prenom, adresse, telephone, cin, profession } = req.body;
   try {
-    const updatedClient = await ClientService.updateClient(id, {
-      Nom,
-      Prenom,
-      Adresse,
-      Telephone,
-      Cin,
-      Profession,
+    const updatedClient = await UtilisateurService.updateClient(id, {
+      Nom: nom,
+      Prenom: prenom,
+      Adresse: adresse,
+      Telephone: telephone,
+      Cin: cin,
+      Profession: profession,
     });
     if (!updatedClient) {
-      return res.status(404).json({ message: "Client non trouvé" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Client non trouvé" });
     }
-    res.status(200).json({ message: "Client mis à jour avec succès" });
+    return res
+      .status(200)
+      .json({ success: true, message: "Client mis à jour avec succès" });
   } catch (error) {
     console.error(error);
   }
@@ -129,10 +141,84 @@ exports.register = async (req, res) => {
   }
 };
 
+exports.changePassword = async (req, res) => {
+  const { email, newPass } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(newPass, 10);
+    const updatedUser = await UtilisateurService.changePassword(
+      email,
+      hashedPassword
+    );
+    if (!updatedUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Utilisateur non trouvé" });
+    }
+    return res
+      .status(200)
+      .json({ success: true, message: "Mot de passe mis à jour avec succès" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Erreur lors de la mise à jour du mot de passe" });
+  }
+};
+
+exports.deleteAccount = async (req, res) => {
+  const { email } = req.params;
+  try {
+    const deletedUser = await UtilisateurService.deleteAccount(email);
+    if (!deletedUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Utilisateur non trouvé" });
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "Compte supprimé avec succès" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Erreur lors de la suppression du compte" });
+  }
+};
+
 exports.getUserConnected = async (req, res) => {
   try {
     res.status(200).json({ user: req.user });
   } catch (error) {
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+exports.getClientCount = async (req, res) => {
+  try {
+    const count = await UtilisateurService.getClientCount();
+    if (!count) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Aucun utilisateur trouvé" });
+    }
+    return res.status(200).json({ count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+exports.getUserSpecific = async (req, res) => {
+  try {
+    const user = await UtilisateurService.getUserSpecific();
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Aucun utilisateur trouvé" });
+    }
+    return res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
@@ -171,7 +257,7 @@ exports.login = async (req, res) => {
     if (!user) {
       return res
         .status(401)
-        .json({ message: "Email ou mot de passe incorrect." });
+        .json({ success: false, message: "Email ou mot de passe incorrect." });
     }
 
     const payload = {
@@ -187,14 +273,14 @@ exports.login = async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       token,
       user: payload,
     });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(500)
       .json({ message: "Erreur serveur. Veuillez réessayer plus tard." });
   }

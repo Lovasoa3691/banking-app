@@ -1,6 +1,7 @@
 const { Connexion, Compte } = require("../models");
 const Utilisateur = require("../models/Utilisateur");
 const bcrypt = require("bcrypt");
+const { Sequelize, Op, where } = require("sequelize");
 
 class UtilisateurService {
   static async createUser(data) {
@@ -18,13 +19,27 @@ class UtilisateurService {
 
   static async deleteClient(idUt) {
     return Utilisateur.destroy({
-      where: { idUt, Discriminator: "Client" },
+      where: { IdUt: idUt, Discriminator: "Client" },
     });
   }
 
   static async updateClient(idUt, updatedData) {
     return Utilisateur.update(updatedData, {
       where: { idUt, Discriminator: "Client" },
+    });
+  }
+
+  static async getUserSpecific() {
+    return Utilisateur.findOne({
+      where: {
+        Discriminator: "Client",
+        IdUt: {
+          [Op.notIn]: Sequelize.literal(
+            `(SELECT UtilisateurClient FROM Compte WHERE UtilisateurClient IS NOT NULL)`
+          ),
+        },
+      },
+      order: [["IdUt", "DESC"]],
     });
   }
 
@@ -85,9 +100,56 @@ class UtilisateurService {
     });
   }
 
-  static async deleteClient(idUt) {
-    return Utilisateur.destroy({
-      where: { idUt, Discriminator: "Client" },
+  static async deleteClient(id) {
+    const client = await Utilisateur.findOne({
+      where: { IdUt: id },
+      include: [
+        {
+          model: Compte,
+          as: "Client",
+        },
+      ],
+    });
+
+    if (!client) {
+      throw new Error("Utilisateur introuvable");
+    }
+
+    const compte = client.IdUt;
+
+    await compte.destroy();
+
+    if (client) {
+      await client.destroy();
+    }
+
+    return true;
+  }
+
+  // static async blockClient(idUt, updatedData) {
+  //   return Utilisateur.update(updatedData, {
+  //     where: { idUt, Discriminator: "Client" },
+  //   });
+  // }
+
+  static async changePassword(email, newPassword) {
+    return Connexion.update(
+      { Mdp: newPassword },
+      {
+        where: { Email: email },
+      }
+    );
+  }
+
+  static async deleteAccount(mail) {
+    return Connexion.destroy({
+      where: { Email: mail },
+    });
+  }
+
+  static async getClientCount() {
+    return Utilisateur.count({
+      where: { Discriminator: "Client" },
     });
   }
 }

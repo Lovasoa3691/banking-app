@@ -11,6 +11,7 @@ const Virement = () => {
     numCompte: "",
     motif: "",
     destinataire: "",
+    codePin: "",
   });
 
   const [numCompte, setNumCompte] = useState("");
@@ -52,6 +53,7 @@ const Virement = () => {
       numCompte: "",
       motif: "",
       destinataire: "",
+      codePin: "",
     });
   };
 
@@ -65,16 +67,47 @@ const Virement = () => {
   };
 
   const doVirement = () => {
-    // console.log(virement);
     api
       .post("/operations/virement", virement)
       .then((rep) => {
-        // console.log(rep.data);
+        if (!rep.data.success) {
+          swal({
+            title: "Erreur",
+            text: rep.data.message || "Une erreur s'est produite",
+            icon: "error",
+            buttons: {
+              confirm: {
+                className: "btn btn-danger",
+              },
+            },
+          });
+          return;
+        }
+
+        swal({
+          title: "Succès",
+          text: rep.data.message,
+          icon: "success",
+          buttons: {
+            confirm: {
+              className: "btn btn-success",
+            },
+          },
+        });
         loadVirementData();
         resetData();
       })
       .catch((err) => {
-        console.log(err);
+        swal({
+          title: "Erreur",
+          text: err.response?.data?.message || "Une erreur s'est produite",
+          icon: "error",
+          buttons: {
+            confirm: {
+              className: "btn btn-danger",
+            },
+          },
+        });
       });
   };
 
@@ -187,6 +220,19 @@ const Virement = () => {
           value={virement.motif}
           onChange={handleChange}
         ></textarea>
+        <input
+          type="password"
+          name="codePin"
+          value={virement.codePin}
+          placeholder="Code PIN"
+          inputMode="numeric" // affiche le pavé numérique sur mobile
+          pattern="[0-9]*" // hint pour le navigateur
+          maxLength={4} // si le code PIN est à 4 chiffres
+          onChange={(e) => {
+            const onlyNums = e.target.value.replace(/\D/, "");
+            setVirement({ ...virement, codePin: onlyNums });
+          }}
+        />
         <button
           onClick={() => {
             doVirement();

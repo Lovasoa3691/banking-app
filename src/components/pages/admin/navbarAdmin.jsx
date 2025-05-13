@@ -5,6 +5,9 @@ import userLogo from "../../../assets/images/user.png";
 import Dashboard from "./dashAdmin";
 import Client from "./client";
 import Compte from "./compte";
+import Pret from "./pret";
+import Transaction from "./transactionA";
+import Profil from "./profilAdmin";
 import {
   BrowserRouter as Router,
   Route,
@@ -12,7 +15,7 @@ import {
   useNavigate,
   Outlet,
 } from "react-router-dom";
-import Profil from "./profilAdmin";
+
 import axios from "axios";
 import api from "../../api/api";
 
@@ -30,7 +33,7 @@ const Navbar = () => {
 
   const logout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    navigate("/login");
   };
 
   const [user, setUser] = useState({});
@@ -85,25 +88,25 @@ const Navbar = () => {
             onClick={() => menuClick("compte", "/admin/compte")}
           >
             <i className="fa-solid fa-right-left"></i> &nbsp;&nbsp;&nbsp;&nbsp;
-            Comptes bancaire
+            Comptes
           </li>
           <li
             className={isActive === "pret" ? "submenu active" : "submenu"}
             onClick={() => menuClick("pret", "/admin/pret")}
           >
             <i className="fa-solid fa-money-bill-wave"></i>{" "}
-            &nbsp;&nbsp;&nbsp;&nbsp; Pret
+            &nbsp;&nbsp;&nbsp;&nbsp; Demande des Prets
           </li>
 
-          <li
+          {/* <li
             className={
               isActive === "trasanction" ? "submenu active" : "submenu"
             }
-            onClick={() => menuClick("trasanction", "/admin/trasanction")}
+            onClick={() => menuClick("trasanction", "/admin/trasanctions")}
           >
             <i className="fa-solid fa-hand-holding-dollar"></i>{" "}
             &nbsp;&nbsp;&nbsp;&nbsp; Suivi des trasanctions
-          </li>
+          </li> */}
 
           <li className="headMenu">Profil</li>
 
@@ -146,7 +149,8 @@ const Navbar = () => {
             <Route path="dashboard" element={<Dashboard />}></Route>
             <Route path="client" element={<Client />}></Route>
             <Route path="compte" element={<Compte />}></Route>
-            {/* <Route path="pret" element={<Pret />}></Route> */}
+            <Route path="pret" element={<Pret />}></Route>
+            {/* <Route path="trasanctions " element={<Transaction />}></Route> */}
             <Route path="profile" element={<Profil />}></Route>
           </Routes>
         </div>

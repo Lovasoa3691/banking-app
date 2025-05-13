@@ -2,24 +2,52 @@ const { Compte } = require("../models");
 const CompteService = require("../services/CompteService");
 
 exports.createCompte = async (req, res) => {
+  const { numCompte, taux, decouverte, type, idClient } = req.body;
   try {
     const date = new Date();
     const formattedDate = date.toISOString().split("T")[0];
 
     const data = {
-      NumCompte: "4253 2238 0739 9435",
+      NumCompte: numCompte,
       Solde: 0.0,
       DateOuverture: formattedDate,
       StatusCompte: "Actif",
-      Taux: 0.15,
-      UtilisateurClient: 2,
-      Discriminator: "Courant",
+      Decouverte: decouverte,
+      Taux: taux,
+      UtilisateurClient: idClient,
+      Discriminator: type,
     };
 
     const newCompte = await CompteService.createCompte(data);
-    res.status(201).json(newCompte);
+    res.status(201).json({
+      success: true,
+      message: "Compte créé avec succès",
+      compte: newCompte,
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+exports.updateCompte = async (req, res) => {
+  const { id } = req.params;
+  const { solde, taux, decouverte } = req.body;
+  try {
+    const updatedCompte = await CompteService.updateCompte(id, {
+      Solde: solde,
+      Taux: taux,
+      Decouvert: decouverte,
+    });
+    if (!updatedCompte) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Compte non trouvé" });
+    }
+    return res
+      .status(200)
+      .json({ success: true, message: "Compte mis à jour avec succès" });
+  } catch (error) {
+    console.error(error);
   }
 };
 
@@ -36,6 +64,37 @@ exports.getAllCompte = async (req, res) => {
   try {
     const data = await CompteService.getAllCompte();
     res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.deleteCompte = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await CompteService.deleteCompte(id);
+    res.status(204).json({
+      success: true,
+      message: "Compte supprimé avec succès",
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getCompteCount = async (req, res) => {
+  try {
+    const count = await CompteService.getCompteCount();
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getTotalCurrent = async (req, res) => {
+  try {
+    const total = await CompteService.getTotalCurrent();
+    res.json({ total });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

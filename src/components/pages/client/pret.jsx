@@ -20,6 +20,7 @@ const Pret = () => {
     numCompte: "",
     duree: "",
     motif: "",
+    codePin: "",
     revenu: 0,
   });
 
@@ -63,6 +64,7 @@ const Pret = () => {
       duree: "",
       motif: "",
       revenu: 0,
+      codePin: "",
     });
   };
 
@@ -76,16 +78,47 @@ const Pret = () => {
   };
 
   const doPret = () => {
-    // console.log(pret);
     api
       .post("/operations/pret", pret)
       .then((rep) => {
-        // console.log(rep.data);
+        if (!rep.data.success) {
+          swal({
+            title: "Erreur",
+            text: rep.data.message || "Une erreur s'est produite",
+            icon: "error",
+            buttons: {
+              confirm: {
+                className: "btn btn-danger",
+              },
+            },
+          });
+          return;
+        }
+
+        swal({
+          title: "Succès",
+          text: rep.data.message,
+          icon: "success",
+          buttons: {
+            confirm: {
+              className: "btn btn-success",
+            },
+          },
+        });
         loadPretData();
         resetData();
       })
       .catch((err) => {
-        console.log(err);
+        swal({
+          title: "Erreur",
+          text: err.response?.data?.message || "Une erreur s'est produite",
+          icon: "error",
+          buttons: {
+            confirm: {
+              className: "btn btn-danger",
+            },
+          },
+        });
       });
   };
 
@@ -191,6 +224,20 @@ const Pret = () => {
           onChange={handleChange}
           placeholder="Motif de la demande"
         ></textarea>
+
+        <input
+          type="password"
+          name="codePin"
+          value={pret.codePin}
+          placeholder="Code PIN"
+          inputMode="numeric" // affiche le pavé numérique sur mobile
+          pattern="[0-9]*" // hint pour le navigateur
+          maxLength={4} // si le code PIN est à 4 chiffres
+          onChange={(e) => {
+            const onlyNums = e.target.value.replace(/\D/, "");
+            setPret({ ...pret, codePin: onlyNums });
+          }}
+        />
 
         <button
           type="button"

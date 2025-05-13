@@ -6,6 +6,7 @@ const Compte = sequelize.define(
   {
     NumCompte: { type: DataTypes.STRING, primaryKey: true },
     Solde: { type: DataTypes.DOUBLE, allowNull: false },
+    Pin: { type: DataTypes.INTEGER, allowNull: false },
     DateOuverture: { type: DataTypes.DATE, allowNull: false },
     StatusCompte: { type: DataTypes.STRING, allowNull: false },
     Decouvert: { type: DataTypes.DOUBLE, allowNull: true },

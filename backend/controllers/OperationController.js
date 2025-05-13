@@ -21,6 +21,16 @@ exports.getAllPret = async (req, res) => {
   }
 };
 
+exports.getAllPretData = async (req, res) => {
+  try {
+    const data = await OperationService.getAllExchangeData();
+    res.status(201).json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getAllRetrait = async (req, res) => {
   const { id } = req.params;
   try {
@@ -53,7 +63,7 @@ exports.getAllOperations = async (req, res) => {
 };
 
 exports.doRetrait = async (req, res) => {
-  const { numCompte, montant, motif } = req.body;
+  const { numCompte, montant, motif, codePin } = req.body;
   try {
     const date = new Date();
     const formattedDate = date.toISOString().split("T")[0];
@@ -66,15 +76,29 @@ exports.doRetrait = async (req, res) => {
       DateOp: formattedDate,
       Discriminator: "Retrait",
     };
+
+    await OperationService.checkPin(numCompte, codePin);
+
+    await OperationService.checkSolde(numCompte, montant);
+
     const newRetrait = await OperationService.doWithdraw(data);
-    res.status(201).json(newRetrait);
+    await OperationService.updateSolde(numCompte, montant);
+
+    return res.status(201).json({
+      success: true,
+      message: "Retrait effectué avec succès",
+      data: newRetrait,
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
 exports.doVirement = async (req, res) => {
-  const { numCompte, destinataire, montant, motif } = req.body;
+  const { numCompte, destinataire, montant, motif, codePin } = req.body;
   try {
     const date = new Date();
     const formattedDate = date.toISOString().split("T")[0];
@@ -89,9 +113,22 @@ exports.doVirement = async (req, res) => {
       Discriminator: "Virement",
     };
     const newVirement = await OperationService.doSend(data);
-    res.status(201).json(newVirement);
+    await OperationService.checkPin(numCompte, codePin);
+
+    await OperationService.checkSolde(numCompte, montant);
+
+    await OperationService.updateSolde(numCompte, montant);
+
+    return res.status(201).json({
+      success: true,
+      message: "Virement effectué avec succès",
+      data: newVirement,
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -119,6 +156,20 @@ exports.doPret = async (req, res) => {
   }
 };
 
+exports.updateStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    const updated = await OperationService.updateStatusPret(id, status);
+    if (updated) {
+      res.json({ success: true, message: "Information modifié" });
+    }
+    OperationService;
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 exports.deleteHistorique = async (req, res) => {
   const { id } = req.params;
   try {
@@ -128,5 +179,49 @@ exports.deleteHistorique = async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getTotalOperations = async (req, res) => {
+  try {
+    const totalRetrait = await OperationService.getTotalRetrait();
+    const totalVirement = await OperationService.getTotalVirement();
+    const totalPret = await OperationService.getTotalPret();
+
+    res.status(200).json({
+      success: true,
+      totalRetrait,
+      totalVirement,
+      totalPret,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getTotalOperationsByClient = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const totalRetrait = await OperationService.getTotalRetraitByClient(id);
+    const totalVirement = await OperationService.getTotalVirementByClient(id);
+    const totalPret = await OperationService.getTotalPretByClient(id);
+
+    res.status(200).json({
+      success: true,
+      totalRetrait,
+      totalVirement,
+      totalPret,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getCurrentOperations = async (req, res) => {
+  try {
+    const data = await OperationService.getCurrentOperation();
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

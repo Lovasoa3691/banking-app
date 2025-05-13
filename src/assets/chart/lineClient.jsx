@@ -20,7 +20,7 @@ ChartJS.register(
   Legend
 );
 
-const LineChart = () => {
+const LineChartClient = ({ numCompte }) => {
   const [operationData, setOperationData] = useState({
     totalRetrait: 0,
     totalVirement: 0,
@@ -29,9 +29,9 @@ const LineChart = () => {
 
   const getTotalOperations = () => {
     api
-      .get("/operations/total")
+      .get(`/operations/client/operations/${numCompte}`)
       .then((rep) => {
-        console.log(rep.data);
+        // console.log(rep.data);
         setOperationData({
           totalRetrait: rep.data.totalRetrait,
           totalVirement: rep.data.totalVirement,
@@ -81,4 +81,4 @@ const LineChart = () => {
   );
 };
 
-export default LineChart;
+export default LineChartClient;

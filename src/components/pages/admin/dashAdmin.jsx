@@ -5,13 +5,65 @@ import api from "../../api/api";
 import accounting from "../../../assets/images/accounting.png";
 import cash from "../../../assets/images/cash.png";
 import customer from "../../../assets/images/customers.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFolderOpen,
+  faMoneyBill1Wave,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 
 const Dashboard = () => {
   const [user, setUser] = useState({});
-  const [clientInfo, setClientInfo] = useState({});
+  const [operationData, setOperationData] = useState([]);
+  const [totalClient, setTotalClient] = useState(0);
+  const [totalCompte, setTotalCompte] = useState(0);
+  const [totalSolde, setTotalSolde] = useState(0);
 
-  const [numCompte, setNumCompte] = useState("");
-  const [listOperation, setOperations] = useState([]);
+  const getClientCount = () => {
+    api
+      .get("/utilisateurs/client/total")
+      .then((rep) => {
+        // console.log(rep.data);
+        setTotalClient(rep.data.count);
+      })
+      .catch((err) => {
+        console.log("Client non trouve: ", err);
+      });
+  };
+
+  const getCompteCount = () => {
+    api
+      .get("/operations/compte/total")
+      .then((rep) => {
+        setTotalCompte(rep.data.count);
+      })
+      .catch((err) => {
+        console.log("Compte non trouve: ", err);
+      });
+  };
+
+  const getTotalCurrent = () => {
+    api
+      .get("/operations/current/total")
+      .then((rep) => {
+        setTotalSolde(rep.data.total);
+      })
+      .catch((err) => {
+        console.log("Solde non trouve: ", err);
+      });
+  };
+
+  const getCurrentOperations = () => {
+    api
+      .get("/operations/current")
+      .then((rep) => {
+        // console.log(rep.data);
+        setOperationData(rep.data);
+      })
+      .catch((err) => {
+        console.log("Erreur lors de la récupération des opérations: ", err);
+      });
+  };
 
   useEffect(() => {
     api
@@ -25,36 +77,11 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    api
-      .get(`/utilisateurs`)
-      .then((rep) => {
-        // console.log(rep.data.client);
-        setClientInfo(rep.data.client);
-        // pret.numCompte = rep.data.client.NumCompte;
-        setNumCompte(rep.data.client.NumCompte);
-      })
-      .catch((err) => {
-        console.log("Compte non trouve: ", err);
-      });
+    getClientCount();
+    getCompteCount();
+    getTotalCurrent();
+    getCurrentOperations();
   }, []);
-
-  useEffect(() => {
-    api
-      .get(`/operations/client/${numCompte}`)
-      .then((rep) => {
-        // console.log(rep.data);
-        setOperations(rep.data);
-      })
-      .catch((err) => {
-        console.log("Compte non trouve: ", err);
-      });
-  }, [numCompte]);
-
-  const loadVirementData = () => {
-    api.get(`/operations/virement/${numCompte}`).then((rep) => {
-      // setVirementData(rep.data);
-    });
-  };
 
   return (
     // <div className="container">
@@ -62,7 +89,7 @@ const Dashboard = () => {
     <div className="dash-content">
       <div style={{ padding: "30px" }} className="card-body">
         <div
-          className="card"
+          className="card-box"
           style={{
             display: "flex",
             alignItems: "center",
@@ -77,13 +104,16 @@ const Dashboard = () => {
             </span>
             <br />
             <br />
-            <strong style={{ fontSize: "40px", fontWeight: "bold" }}>30</strong>
+            <strong style={{ fontSize: "40px", fontWeight: "bold" }}>
+              {totalClient}
+            </strong>
           </div>
-          <img src={customer} alt="" width={100} height={100} />
+          <FontAwesomeIcon style={{ fontSize: "60px" }} icon={faUser} />
+          {/* <img src={customer} alt="" width={100} height={100} /> */}
         </div>
 
         <div
-          className="card"
+          className="card-box"
           style={{
             display: "flex",
             alignItems: "center",
@@ -94,17 +124,20 @@ const Dashboard = () => {
         >
           <div>
             <span style={{ fontSize: "18px", fontWeight: "bold" }}>
-              Nombre de compte ouvert
+              Nombre de Compte ouverte
             </span>
             <br />
             <br />
-            <strong style={{ fontSize: "40px", fontWeight: "bold" }}>30</strong>
+            <strong style={{ fontSize: "40px", fontWeight: "bold" }}>
+              {totalCompte}
+            </strong>
           </div>
-          <img src={accounting} alt="" width={100} height={100} />
+          <FontAwesomeIcon style={{ fontSize: "60px" }} icon={faFolderOpen} />
+          {/* <img src={accounting} alt="" width={100} height={100} /> */}
         </div>
 
         <div
-          className="card"
+          className="card-box"
           style={{
             display: "flex",
             alignItems: "center",
@@ -120,10 +153,19 @@ const Dashboard = () => {
             <br />
             <br />
             <strong style={{ fontSize: "40px", fontWeight: "bold" }}>
-              100,000.00
+              {totalSolde.toLocaleString("fr-FR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}{" "}
+              Ar
             </strong>
           </div>
-          <img src={cash} alt="" width={100} height={100} />
+          <FontAwesomeIcon
+            // size="3x"
+            style={{ fontSize: "60px" }}
+            icon={faMoneyBill1Wave}
+          />
+          {/* <img src={cash} alt="" width={100} height={100} /> */}
         </div>
       </div>
 
@@ -167,16 +209,17 @@ const Dashboard = () => {
           <table className="custom-table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Montant</th>
-                <th>Statut</th>
+                <th>COMPTE</th>
+                <th>DATE</th>
+                <th>TYPE</th>
+                <th>MONTANT</th>
               </tr>
             </thead>
             <tbody>
-              {/* {listOperation && listOperation.length > 0 ? (
-                listOperation.map((item) => (
-                  <tr>
+              {operationData && operationData.length > 0 ? (
+                operationData.map((item) => (
+                  <tr key={item.NumOp}>
+                    <td>{item.NumCompte}</td>
                     <td>{item.DateOp}</td>
                     <td>{item.Discriminator}</td>
                     <td>
@@ -186,12 +229,11 @@ const Dashboard = () => {
                       })}{" "}
                       Ar
                     </td>
-                    <td>{item.StatusP}</td>
                   </tr>
                 ))
               ) : (
                 <tr></tr>
-              )} */}
+              )}
             </tbody>
           </table>
         </div>

@@ -10,6 +10,7 @@ const Retrait = () => {
     montant: 0,
     numCompte: "",
     motif: "",
+    codePin: "",
   });
 
   const [numCompte, setNumCompte] = useState("");
@@ -50,6 +51,7 @@ const Retrait = () => {
       montant: 0,
       numCompte: "",
       motif: "",
+      codePin: "",
     });
   };
 
@@ -63,16 +65,47 @@ const Retrait = () => {
   };
 
   const doRetrait = () => {
-    // console.log(retrait);
     api
       .post("/operations/retrait", retrait)
       .then((rep) => {
-        // console.log(rep.data);
+        if (!rep.data.success) {
+          swal({
+            title: "Erreur",
+            text: rep.data.message || "Une erreur s'est produite",
+            icon: "error",
+            buttons: {
+              confirm: {
+                className: "btn btn-danger",
+              },
+            },
+          });
+          return;
+        }
+
+        swal({
+          title: "Succès",
+          text: rep.data.message,
+          icon: "success",
+          buttons: {
+            confirm: {
+              className: "btn btn-success",
+            },
+          },
+        });
         loadRetraitData();
         resetData();
       })
       .catch((err) => {
-        console.log(err);
+        swal({
+          title: "Erreur",
+          text: err.response?.data?.message || "Une erreur s'est produite",
+          icon: "error",
+          buttons: {
+            confirm: {
+              className: "btn btn-danger",
+            },
+          },
+        });
       });
   };
 
@@ -104,7 +137,7 @@ const Retrait = () => {
                 },
               },
             });
-            loadPretData();
+            loadRetraitData();
           } else {
             swal(`${rep.data.message}`, {
               icon: "error",
@@ -114,7 +147,7 @@ const Retrait = () => {
                 },
               },
             });
-            loadPretData();
+            loadRetraitData();
           }
         });
       } else {
@@ -162,6 +195,19 @@ const Retrait = () => {
           value={retrait.motif}
           onChange={handleChange}
         ></textarea>
+        <input
+          type="password"
+          name="codePin"
+          value={retrait.codePin}
+          placeholder="Code PIN"
+          inputMode="numeric" // affiche le pavé numérique sur mobile
+          pattern="[0-9]*" // hint pour le navigateur
+          maxLength={4} // si le code PIN est à 4 chiffres
+          onChange={(e) => {
+            const onlyNums = e.target.value.replace(/\D/, "");
+            setRetrait({ ...retrait, codePin: onlyNums });
+          }}
+        />
         <button
           onClick={() => {
             doRetrait();

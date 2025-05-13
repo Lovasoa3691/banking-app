@@ -18,16 +18,62 @@ import { Tooltip } from "react-tooltip";
 const Compte = () => {
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
-  const [pret, setPret] = useState({
-    montant: 0,
+  const [compte, setcompte] = useState({
+    idClient: "",
+    solde: 0,
     numCompte: "",
-    duree: "",
-    motif: "",
-    revenu: 0,
+    type: "",
+    decouverte: 0,
+    taux: 0,
   });
 
   const [numCompte, setNumCompte] = useState("");
   const [compteData, setCompteData] = useState([]);
+
+  const [numeroCompte, setNumeroCompte] = useState("");
+  const [userData, setUserData] = useState({});
+
+  const [isActive, setIsActive] = useState(false);
+  const [isEditActive, setIsEditActive] = useState(false);
+
+  const openModal = () => {
+    setIsActive(true);
+  };
+
+  const openEditModal = (item) => {
+    setIsEditActive(true);
+
+    compte.numCompte = item.NumCompte;
+    compte.type = item.Discriminator;
+    compte.decouverte = item.Decouvert;
+    compte.taux = item.Taux;
+    compte.idClient = item.Client.IdUt;
+    compte.solde = item.Solde;
+  };
+
+  const genererNumeroCompte = () => {
+    let numero = "";
+    for (let i = 0; i < 16; i++) {
+      const chiffre = Math.floor(Math.random() * 10);
+      if (i === 0 && chiffre === 0) {
+        i--;
+        continue;
+      }
+      numero += chiffre.toString();
+    }
+
+    return numero.match(/.{1,4}/g).join(" ");
+  };
+
+  useEffect(() => {
+    setNumeroCompte(genererNumeroCompte());
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const numeroSansEspaces = numeroCompte.replace(/\s/g, "");
+    // console.log("Numéro de compte (brut) :", numeroSansEspaces);
+  };
 
   useEffect(() => {
     api
@@ -40,33 +86,20 @@ const Compte = () => {
       });
   }, []);
 
-  useEffect(() => {
-    api
-      .get(`/utilisateurs`)
-      .then((rep) => {
-        setClientInfo(rep.data.client);
-        pret.numCompte = rep.data.client.NumCompte;
-        setNumCompte(rep.data.client.NumCompte);
-      })
-      .catch((err) => {
-        console.log("Compte non trouve: ", err);
-      });
-  }, []);
-
   const loadCompteData = () => {
     api.get(`/utilisateurs/compte`).then((rep) => {
-      console.log(rep.data);
       setCompteData(rep.data);
     });
   };
 
   const resetData = () => {
-    setPret({
-      montant: 0,
+    setcompte({
+      idClient: "",
+      solde: 0,
       numCompte: "",
-      duree: "",
-      motif: "",
-      revenu: 0,
+      type: "",
+      decouverte: 0,
+      taux: 0,
     });
   };
 
@@ -74,17 +107,56 @@ const Compte = () => {
     loadCompteData();
   }, []);
 
+  const loadUserData = () => {
+    api
+      .get("utilisateurs/all")
+      .then((rep) => {
+        setUserData(rep.data);
+      })
+      .catch((err) => {
+        console.log("Utilisateur non trouve: ", err);
+      });
+  };
+
+  useEffect(() => {
+    loadUserData();
+  }, [userData]);
+
+  useEffect(() => {
+    compte.numCompte = genererNumeroCompte();
+    compte.idClient = userData.IdUt;
+  }, [numeroCompte, userData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setPret({ ...pret, [name]: value });
+    setcompte({ ...compte, [name]: value });
   };
 
   const saveCompte = () => {
-    // console.log(pret);
+    // console.log(compte);
     api
-      .post("/operations/pret", pret)
+      .post("/operations/compte", compte)
       .then((rep) => {
-        // console.log(rep.data);
+        if (rep.data.success) {
+          swal(`${rep.data.message}`, {
+            icon: "success",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
+            },
+          });
+        } else {
+          swal(`${rep.data.message}`, {
+            icon: "error",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
+            },
+          });
+        }
+        setIsActive(false);
         loadCompteData();
         resetData();
       })
@@ -96,9 +168,28 @@ const Compte = () => {
   const updateCompte = () => {
     // console.log(pret);
     api
-      .put("/operations/pret", pret)
+      .put(`/operations/compte/${compte.numCompte}`, compte)
       .then((rep) => {
-        // console.log(rep.data);
+        if (rep.data.success) {
+          swal(`${rep.data.message}`, {
+            icon: "success",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
+            },
+          });
+        } else {
+          swal(`${rep.data.message}`, {
+            icon: "error",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
+            },
+          });
+        }
+        setIsEditActive(false);
         loadCompteData();
         resetData();
       })
@@ -107,7 +198,7 @@ const Compte = () => {
       });
   };
 
-  const deleteCompte = (numOp) => {
+  const deleteCompte = (num) => {
     swal({
       title: "Êtes-vous sûr ?",
       text: "Une fois supprimé, vous ne pourrez plus récupérer cet information !",
@@ -125,7 +216,7 @@ const Compte = () => {
       },
     }).then((willDelete) => {
       if (willDelete) {
-        api.delete(`operations/historique/${numOp}`).then((rep) => {
+        api.delete(`operations/compte/${num}`).then((rep) => {
           if (rep.data.success) {
             swal(`${rep.data.message}`, {
               icon: "success",
@@ -154,80 +245,211 @@ const Compte = () => {
     });
   };
 
-  const options = [
-    { value: "En attente", label: "En attente" },
-    { value: "Approuver", label: "Approuver" },
-    { value: "Refuse", label: "Refuse" },
-  ];
-
   return (
     <div className="container-data">
-      <h2>Liste des comptes ouvertes</h2>
+      <h2 style={{ textAlign: "start" }}>Liste des comptes ouvertes</h2>
 
-      {/* <form className="withdraw-form">
-        <h2>Formulaire de demande de pret</h2>
-        <input
-          style={{ backgroundColor: "#fffcc8" }}
-          type="text"
-          placeholder="Nom"
-          disabled
-          value={user.nom + " " + user.prenom}
-        />
-        <input
-          style={{ backgroundColor: "#fffcc8" }}
-          type="text"
-          placeholder="Numéro de compte"
-          disabled
-          name="numCompte"
-          value={clientInfo.NumCompte}
-        />
-        <input
-          type="number"
-          name="montant"
-          value={pret.montant}
-          onChange={handleChange}
-          placeholder="Montant du pret demande"
-          min="0"
-        />
-        <input
-          type="number"
-          name="duree"
-          value={pret.duree}
-          onChange={handleChange}
-          placeholder="Duree (en mois)"
-        />
-        <input
-          type="number"
-          name="revenu"
-          value={pret.revenu}
-          onChange={handleChange}
-          placeholder="Revenu mensuel"
-        />
-        <textarea
-          name="motif"
-          value={pret.motif}
-          onChange={handleChange}
-          placeholder="Motif de la demande"
-        ></textarea>
+      {isActive && (
+        <div className="modal">
+          <form className="">
+            <h2>Enregistrement d'un nouveau compte bancaire</h2>
+            <div className="form-group">
+              <label htmlFor="numCompte">Numéro de compte</label>
+              <input
+                type="text"
+                name="numCompte"
+                disabled
+                id="numCompte"
+                value={numeroCompte}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group" style={{ paddingBottom: "25px" }}>
+              <label htmlFor="numCompte">Type de compte</label>
+              <select
+                name="type"
+                style={{ width: "100%", padding: "10px" }}
+                id=""
+                value={compte.type}
+                onChange={handleChange}
+              >
+                <option value="" disabled>
+                  Chosir le type de compte
+                </option>
+                <option value="Courant">Courant</option>
+                <option value="Epargne">Epargne</option>
+              </select>
+            </div>
+            <div className="form-group" style={{ paddingBottom: "25px" }}>
+              <label htmlFor="numCompte">Nom et prenom du client</label>
+              <select
+                name="idClient"
+                style={{ width: "100%", padding: "10px" }}
+                id=""
+                value={compte.idClient}
+                onChange={handleChange}
+              >
+                <option value={userData.IdUt}>
+                  {userData.Nom + " " + userData.Prenom}
+                </option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="numCompte">Solde du compte</label>
+              <input
+                type="number"
+                name="solde"
+                id="solde"
+                value={compte.solde}
+                onChange={handleChange}
+                min={0}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="numCompte">Montant du decouverte</label>
+              <input
+                type="number"
+                name="decouverte"
+                id="decouverte"
+                value={compte.decouverte}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group" style={{ paddingBottom: "25px" }}>
+              <label htmlFor="numCompte">Taux</label>
+              <select
+                name="taux"
+                style={{ width: "100%", padding: "10px" }}
+                id="taux"
+                value={compte.taux}
+                onChange={handleChange}
+              >
+                <option selected defaultValue={""}>
+                  Choisir
+                </option>
+                <option value="0.05">5%</option>
+                <option value="0.10">10%</option>
+                <option value="0.15">15%</option>
+                <option value="0.20">20%</option>
+              </select>
+            </div>
+            <div className="btn-save">
+              <button onClick={saveCompte} type="button">
+                Enregistrer
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
-        <button
-          type="button"
-          onClick={() => {
-            doPret();
-          }}
-          style={{
-            fontSize: "20px",
-          }}
-        >
-          <FontAwesomeIcon icon={faSave} />
-        </button>
-      </form> */}
+      {isEditActive && (
+        <div className="modal">
+          <form className="">
+            <h2>Modification</h2>
+            <div className="form-group">
+              <label htmlFor="numCompte">Numéro de compte</label>
+              <input
+                type="text"
+                name="numCompte"
+                disabled
+                id="numCompte"
+                value={compte.numCompte}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group" style={{ paddingBottom: "25px" }}>
+              <label htmlFor="numCompte">Type de compte</label>
+              <select
+                disabled
+                name="type"
+                style={{ width: "100%", padding: "10px" }}
+                id=""
+                value={compte.type}
+                onChange={handleChange}
+              >
+                <option value="" disabled>
+                  Chosir le type de compte
+                </option>
+                <option value="Courant">Courant</option>
+                <option value="Epargne">Epargne</option>
+              </select>
+            </div>
+            <div className="form-group" style={{ paddingBottom: "25px" }}>
+              <label htmlFor="numCompte">Nom et prenom du client</label>
+              <select
+                name="idClient"
+                style={{ width: "100%", padding: "10px" }}
+                id=""
+                value={compte.idClient}
+                onChange={handleChange}
+              >
+                <option value={userData.IdUt}>
+                  {userData.Nom + " " + userData.Prenom}
+                </option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="numCompte">Solde du compte</label>
+              <input
+                type="number"
+                name="solde"
+                id="solde"
+                value={compte.solde}
+                onChange={handleChange}
+                min={0}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="numCompte">Montant du decouverte</label>
+              {compte.type == "Epargne" ? (
+                <input
+                  type="number"
+                  name="decouverte"
+                  id="decouverte"
+                  disabled
+                  value={compte.decouverte}
+                  onChange={handleChange}
+                />
+              ) : (
+                <input
+                  type="number"
+                  name="decouverte"
+                  id="decouverte"
+                  value={compte.decouverte}
+                  onChange={handleChange}
+                />
+              )}
+            </div>
+            <div className="form-group" style={{ paddingBottom: "25px" }}>
+              <label htmlFor="numCompte">Taux</label>
+              <select
+                name="taux"
+                style={{ width: "100%", padding: "10px" }}
+                id="taux"
+                value={compte.taux}
+                onChange={handleChange}
+              >
+                <option defaultValue={""}>Choisir</option>
+                <option value="0.05">5%</option>
+                <option value="0.10">10%</option>
+                <option value="0.15">15%</option>
+                <option value="0.20">20%</option>
+              </select>
+            </div>
+            <div className="btn-save">
+              <button onClick={updateCompte} type="button">
+                Mettre a jour
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <div className="transaction-history">
         <div className="history-toolbar">
           <div styles={{ width: "100px" }}>
             <div className="action">
-              <button>
+              <button onClick={openModal}>
                 {" "}
                 <FontAwesomeIcon icon={faPlus} /> &nbsp;&nbsp;Nouveau compte
               </button>
@@ -259,11 +481,13 @@ const Compte = () => {
         <table className="custom-table">
           <thead>
             <tr>
+              <th>DATE OUVERTURE</th>
               <th>NUMERO COMPTE</th>
               <th>SOLDE</th>
-              <th>DATE OUVERTURE</th>
+
               <th>TYPE</th>
-              {/* <th>CLIENT</th> */}
+              <th>DECOUVERTE</th>
+              <th>TAUX</th>
               <th>STATUS</th>
               <th>ACTIONS</th>
             </tr>
@@ -273,11 +497,17 @@ const Compte = () => {
               compteData.map((item) => (
                 <tr
                   data-tooltip-content={`Client : ${
-                    item.Client.Nom + " " + item.Client.Prenom
+                    item.Client.Nom +
+                    " " +
+                    item.Client.Prenom +
+                    " (" +
+                    item.Client.Telephone +
+                    ") "
                   }`}
                   data-tooltip-id="numCompte"
-                  key={item.IdUt}
+                  key={item.NumCompte}
                 >
+                  <td>{item.DateOuverture}</td>
                   <td>{item.NumCompte}</td>
                   <td>
                     {item.Solde.toLocaleString("fr-FR", {
@@ -286,8 +516,12 @@ const Compte = () => {
                     })}{" "}
                     Ar
                   </td>
-                  <td>{item.DateOuverture}</td>
+
                   <td>{item.Discriminator}</td>
+                  <td>
+                    {item.Discriminator == "Epargne" ? "Null" : item.Decouvert}
+                  </td>
+                  <td>{item.Taux}</td>
                   <td>{item.StatusCompte}</td>
                   <td
                     style={{
@@ -297,12 +531,12 @@ const Compte = () => {
                     }}
                   >
                     <FontAwesomeIcon
-                      // onClick={() => updateClient(item.NumOp)}
+                      onClick={() => openEditModal(item)}
                       icon={faEdit}
                     />
                     &nbsp;&nbsp;&nbsp;
                     <FontAwesomeIcon
-                      // onClick={() => deleteClient(item.NumOp)}
+                      onClick={() => deleteCompte(item.NumCompte)}
                       icon={faTrash}
                     />
                   </td>

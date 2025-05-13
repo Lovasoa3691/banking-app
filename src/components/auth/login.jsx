@@ -4,6 +4,7 @@ import logo from "../../assets/images/bank.png";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import api from "../api/api";
+import Swal from "sweetalert2";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,13 +20,29 @@ const Login = () => {
       .then((rep) => {
         if (rep.data.success) {
           localStorage.setItem("token", rep.data.token);
-          // console.log(rep.data.user);
           navigate(
             rep.data.user.role === "Client"
               ? "/client/dashboard"
               : "/admin/dashboard",
             { replace: true }
           );
+        }
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 401) {
+          Swal.fire({
+            icon: "error",
+            title: "Erreur de connexion",
+            text: error.response.data.message,
+            confirmButtonColor: "#d33",
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Erreur serveur",
+            text: "Veuillez réessayer plus tard.",
+          });
+          console.error(error);
         }
       });
   };

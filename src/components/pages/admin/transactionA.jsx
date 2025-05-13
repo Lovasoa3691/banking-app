@@ -14,11 +14,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 
-const Client = () => {
+const Transaction = () => {
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
   const [data, setData] = useState({
-    id: "",
     nom: "",
     cin: "",
     prenom: "",
@@ -29,25 +28,6 @@ const Client = () => {
 
   const [numCompte, setNumCompte] = useState("");
   const [clientData, setClientData] = useState([]);
-
-  const [isActive, setIsActive] = useState(false);
-  const [isEditActive, setIsEditActive] = useState(false);
-
-  const openModal = () => {
-    setIsActive(true);
-  };
-
-  const openEditModal = (item) => {
-    setIsEditActive(true);
-
-    data.id = item.IdUt;
-    data.nom = item.Nom;
-    data.cin = item.Cin;
-    data.prenom = item.Prenom;
-    data.adresse = item.Adresse;
-    data.telephone = item.Telephone;
-    data.profession = item.Profession;
-  };
 
   useEffect(() => {
     api
@@ -81,7 +61,6 @@ const Client = () => {
 
   const resetData = () => {
     setData({
-      id: "",
       nom: "",
       cin: "",
       prenom: "",
@@ -90,6 +69,8 @@ const Client = () => {
       profession: "",
     });
   };
+
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     loadClientData();
@@ -118,10 +99,9 @@ const Client = () => {
   const updateClient = () => {
     // console.log(pret);
     api
-      .put(`/utilisateurs/client/${data.id}`, data)
+      .put("/utilisateurs/client", data)
       .then((rep) => {
         // console.log(rep.data);
-        setIsEditActive(false);
         loadClientData();
         resetData();
       })
@@ -177,6 +157,10 @@ const Client = () => {
     });
   };
 
+  const openModal = () => {
+    setIsActive(true);
+  };
+
   const options = [
     { value: "En attente", label: "En attente" },
     { value: "Approuver", label: "Approuver" },
@@ -185,177 +169,73 @@ const Client = () => {
 
   return (
     <div className="container-data">
-      <h2 style={{ textAlign: "start" }}>Liste des clients enregistres</h2>
-
-      {isActive && (
+      <h2 style={{ textAlign: "start" }}>Liste des trasnactions faites par </h2>
+      {/* {isActive && (
         <div className="modal">
           <form className="">
             <h2>Nouveau Client</h2>
-            <div className="form-group">
-              <label htmlFor="numCompte">Nom</label>
-              <input
-                type="text"
-                name="nom"
-                disabled
-                id="nom"
-                value={data.nom}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Prenom</label>
-              <input
-                // style={{ backgroundColor: "#fffcc8" }}
-                type="text"
-                placeholder="Prenom"
-                onChange={handleChange}
-                name="prenom"
-                value={data.prenom}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Numero de Carte d'identite</label>
-              <input
-                // style={{ backgroundColor: "#fffcc8" }}
-                type="text"
-                placeholder="Carte d'identité nationale"
-                onChange={handleChange}
-                name="cin"
-                value={data.cin}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Adresse</label>
-              <input
-                type="text"
-                name="adresse"
-                value={data.adresse}
-                onChange={handleChange}
-                placeholder="Adresse"
-                // min="0"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Numero telephone</label>
-              <input
-                type="text"
-                name="telephone"
-                value={data.telephone}
-                onChange={handleChange}
-                placeholder="Numero de telephone"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Profession</label>
-              <input
-                type="text"
-                name="profession"
-                value={data.profession}
-                onChange={handleChange}
-                placeholder="Profession"
-              />
-            </div>
-            <div className="btn-save">
-              <button
-                type="button"
-                onClick={() => {
-                  saveClient();
-                }}
-                style={{
-                  fontSize: "20px",
-                }}
-              >
-                <FontAwesomeIcon icon={faSave} />
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+            <input
+              
+              type="text"
+              placeholder="Nom"
+              onChange={handleChange}
+              name="nom"
+              value={data.nom}
+            />
+            <input
+             
+              type="text"
+              placeholder="Prenom"
+              onChange={handleChange}
+              name="prenom"
+              value={data.prenom}
+            />
+            <input
+              
+              type="text"
+              placeholder="Carte d'identité nationale"
+              onChange={handleChange}
+              name="cin"
+              value={data.cin}
+            />
+            <input
+              type="text"
+              name="adresse"
+              value={data.adresse}
+              onChange={handleChange}
+              placeholder="Adresse"
+              
+            />
+            <input
+              type="text"
+              name="telephone"
+              value={data.telephone}
+              onChange={handleChange}
+              placeholder="Numero de telephone"
+            />
+            <input
+              type="text"
+              name="profession"
+              value={data.profession}
+              onChange={handleChange}
+              placeholder="Profession"
+            />
+            <br />
 
-      {isEditActive && (
-        <div className="modal">
-          <form className="">
-            <h2>Modifier information du client</h2>
-            <div className="form-group">
-              <label htmlFor="numCompte">Nom</label>
-              <input
-                type="text"
-                name="nom"
-                disabled
-                id="nom"
-                value={data.nom}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Prenom</label>
-              <input
-                // style={{ backgroundColor: "#fffcc8" }}
-                type="text"
-                placeholder="Prenom"
-                onChange={handleChange}
-                name="prenom"
-                value={data.prenom}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Numero de Carte d'identite</label>
-              <input
-                // style={{ backgroundColor: "#fffcc8" }}
-                type="text"
-                placeholder="Carte d'identité nationale"
-                onChange={handleChange}
-                name="cin"
-                value={data.cin}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Adresse</label>
-              <input
-                type="text"
-                name="adresse"
-                value={data.adresse}
-                onChange={handleChange}
-                placeholder="Adresse"
-                // min="0"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Numero telephone</label>
-              <input
-                type="text"
-                name="telephone"
-                value={data.telephone}
-                onChange={handleChange}
-                placeholder="Numero de telephone"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Profession</label>
-              <input
-                type="text"
-                name="profession"
-                value={data.profession}
-                onChange={handleChange}
-                placeholder="Profession"
-              />
-            </div>
-            <div className="btn-save">
-              <button
-                type="button"
-                onClick={() => {
-                  updateClient();
-                }}
-                style={{
-                  fontSize: "20px",
-                }}
-              >
-                <FontAwesomeIcon icon={faSave} />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => {
+                saveClient();
+              }}
+              style={{
+                fontSize: "20px",
+              }}
+            >
+              <FontAwesomeIcon icon={faSave} />
+            </button>
           </form>
         </div>
-      )}
+      )} */}
 
       <div className="transaction-history">
         <div className="history-toolbar">
@@ -432,13 +312,12 @@ const Client = () => {
                     <FontAwesomeIcon
                       // onClick={() => updateClient(item.NumOp)}
                       icon={faEdit}
-                      onClick={() => openEditModal(item)}
                     />
-                    {/* &nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;
                     <FontAwesomeIcon
                       onClick={() => deleteClient(item.IdUt)}
                       icon={faTrash}
-                    /> */}
+                    />
                   </td>
                 </tr>
               ))
@@ -452,4 +331,4 @@ const Client = () => {
   );
 };
 
-export default Client;
+export default Transaction;

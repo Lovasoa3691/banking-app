@@ -31,7 +31,7 @@ const Navbar = () => {
 
   const logout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    navigate("/login");
   };
 
   const [user, setUser] = useState({});
