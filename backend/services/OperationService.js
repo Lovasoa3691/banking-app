@@ -1,4 +1,4 @@
-const { Compte, Operation } = require("../models");
+const { Compte, Operation, Utilisateur, Connexion } = require("../models");
 
 class OperationService {
   static async createCompte(data) {
@@ -20,9 +20,10 @@ class OperationService {
     if (!compte) {
       throw new Error("Compte introuvable");
     }
-    if (compte.Pin !== pin) {
+    if (String(compte.Pin) !== String(pin)) {
       throw new Error("Code PIN incorrect");
     }
+
     return compte;
   }
 
@@ -102,6 +103,24 @@ class OperationService {
   static async getAllExchange(num) {
     return Operation.findAll({
       where: { NumCompte: num, Discriminator: "Pret" },
+    });
+  }
+
+  static async findOneOperation(id) {
+    return Operation.findOne({
+      where: { NumOp: id },
+      include: {
+        model: Compte,
+        as: "Operations",
+        include: {
+          model: Utilisateur,
+          as: "Client",
+          include: {
+            model: Connexion,
+            as: "Utilisateur",
+          },
+        },
+      },
     });
   }
 

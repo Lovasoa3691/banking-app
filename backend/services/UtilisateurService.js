@@ -60,6 +60,17 @@ class UtilisateurService {
     return null;
   }
 
+  static async checkUser(phone) {
+    const user = await Utilisateur.findOne({
+      where: { Telephone: phone },
+    });
+
+    if (user) {
+      return user;
+    }
+    return null;
+  }
+
   static async getAllClient() {
     return await Utilisateur.findAll({
       where: { Discriminator: "Client" },

@@ -1,20 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import api from "../../api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import html2pdf from "html2pdf.js";
+import Recu from "./recu";
+import { createRoot } from "react-dom/client";
 
 const Retrait = () => {
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
-  const [retrait, setRetrait] = useState({
-    montant: 0,
-    numCompte: "",
-    motif: "",
-    codePin: "",
-  });
 
   const [numCompte, setNumCompte] = useState("");
   const [retraitData, setRetraitData] = useState([]);
+  const [retrait, setRetrait] = useState({
+    type: "Retrait",
+    montant: 0,
+    numCompte: "",
+    destinataire: "",
+    motif: "",
+    codePin: "",
+    date: "",
+    titulaire: "",
+  });
 
   useEffect(() => {
     api
@@ -33,12 +40,14 @@ const Retrait = () => {
       .then((rep) => {
         setClientInfo(rep.data.client);
         retrait.numCompte = rep.data.client.NumCompte;
+        retrait.titulaire = user.nom + " " + user.prenom;
+        retrait.date = new Date().toLocaleString("fr-FR");
         setNumCompte(rep.data.client.NumCompte);
       })
       .catch((err) => {
         console.log("Compte non trouve: ", err);
       });
-  }, []);
+  }, [user]);
 
   const loadRetraitData = () => {
     api.get(`/operations/retrait/${numCompte}`).then((rep) => {
@@ -48,10 +57,14 @@ const Retrait = () => {
 
   const resetData = () => {
     setRetrait({
+      type: "Retrait",
       montant: 0,
       numCompte: "",
       motif: "",
       codePin: "",
+      destinataire: "",
+      date: "",
+      titulaire: "",
     });
   };
 
@@ -81,7 +94,6 @@ const Retrait = () => {
           });
           return;
         }
-
         swal({
           title: "Succès",
           text: rep.data.message,
@@ -89,11 +101,33 @@ const Retrait = () => {
           buttons: {
             confirm: {
               className: "btn btn-success",
+              text: "OK",
             },
           },
+        }).then(() => {
+          swal({
+            title: "Impression du reçu",
+            text: "Souhaitez-vous imprimer le reçu ?",
+            icon: "info",
+            buttons: {
+              cancel: {
+                text: "Non",
+                visible: true,
+                className: "btn btn-secondary",
+              },
+              confirm: {
+                text: "Oui",
+                className: "btn btn-primary",
+              },
+            },
+          }).then((willPrint) => {
+            if (willPrint) {
+              generatePDF();
+            }
+          });
+          loadRetraitData();
+          resetData();
         });
-        loadRetraitData();
-        resetData();
       })
       .catch((err) => {
         swal({
@@ -162,6 +196,68 @@ const Retrait = () => {
     { value: "Refuse", label: "Refuse" },
   ];
 
+  const [numDest, setNumDest] = useState("");
+
+  const handleChangeCompteDest = (e) => {
+    let input = e.target.value;
+
+    input = input.replace(/\D/g, "");
+
+    input = input.match(/.{1,4}/g);
+
+    if (input) {
+      input = input.join(" ");
+    } else {
+      input = "";
+    }
+
+    setNumDest(input);
+
+    setRetrait((prev) => ({
+      ...prev,
+      destinataire: input,
+    }));
+  };
+
+  const generatePDF = () => {
+    const div = document.createElement("div");
+    document.body.appendChild(div);
+
+    const root = createRoot(div);
+    root.render(<Recu {...retrait} />);
+
+    setTimeout(() => {
+      const opt = {
+        margin: 1,
+        filename: `recu${retrait.numCompte}.pdf`,
+        html2canvas: {
+          scale: 2,
+          logging: true,
+          useCORS: true,
+        },
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+        },
+      };
+
+      html2pdf()
+        .from(div)
+        .set(opt)
+        .save()
+        .then(() => {
+          root.unmount();
+          document.body.removeChild(div);
+        })
+        .catch(() => {
+          console.error("Erreur lors de la génération du PDF");
+          root.unmount();
+          document.body.removeChild(div);
+        });
+    }, 1000);
+  };
+
   return (
     <div className="container-data">
       <form className="withdraw-form">
@@ -180,6 +276,14 @@ const Retrait = () => {
           name="numCompte"
           value={clientInfo.NumCompte}
           placeholder="Numéro de compte"
+        />
+        <input
+          type="text"
+          name="destinataire"
+          value={numDest}
+          onChange={handleChangeCompteDest}
+          maxLength={19}
+          placeholder="Numéro de compte destinataire"
         />
         <input
           type="number"
@@ -216,8 +320,10 @@ const Retrait = () => {
         >
           Valider le retrait
         </button>
-        &nbsp;&nbsp;&nbsp;
-        <button type="button">Vider</button>
+        {/* &nbsp;&nbsp;&nbsp;
+        <button onClick={generatePDF} type="button">
+          Vider
+        </button> */}
       </form>
 
       <div className="transaction-history">
@@ -255,6 +361,18 @@ const Retrait = () => {
           )}
         </div>
       </div>
+
+      {/* <div ref={receiptRef} style={{ display: "none", padding: "30px" }}>
+        <h2 style={{ textAlign: "center" }}>Reçu de Retrait</h2>
+
+        <p>Numéro de Compte : {retraitData.numCompte}</p>
+        <p>Montant Retiré : {retraitData.montant} FCFA</p>
+        <p>Motif : {retraitData.motif}</p>
+        <p>Date : {retraitData.date}</p>
+        <p>Opérateur : {retraitData.nomOperateur}</p>
+        <hr />
+        <p>Merci d’avoir utilisé notre service.</p>
+      </div> */}
     </div>
   );
 };

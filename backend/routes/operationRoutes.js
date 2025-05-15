@@ -17,6 +17,7 @@ router.get("/compte/total", CompteController.getCompteCount);
 router.get("/current/total", CompteController.getTotalCurrent);
 router.get("/total", verifyToken, controller.getTotalOperations);
 router.get("/current", verifyToken, controller.getCurrentOperations);
+router.get("/operation/:id", controller.findOneOperation);
 
 // Creation
 router.post("/compte", verifyToken, CompteController.createCompte);

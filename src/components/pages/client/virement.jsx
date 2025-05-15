@@ -1,12 +1,18 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import api from "../../api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { createRoot } from "react-dom/client";
+import Recu from "./recu";
+import html2pdf from "html2pdf.js";
 
 const Virement = () => {
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
   const [virement, setVirement] = useState({
+    type: "Virement",
+    date: new Date().toLocaleString("fr-FR"),
+    titulaire: "",
     montant: 0,
     numCompte: "",
     motif: "",
@@ -34,12 +40,14 @@ const Virement = () => {
       .then((rep) => {
         setClientInfo(rep.data.client);
         virement.numCompte = rep.data.client.NumCompte;
+        virement.titulaire = user.nom + " " + user.prenom;
+        virement.date = new Date().toLocaleString("fr-FR");
         setNumCompte(rep.data.client.NumCompte);
       })
       .catch((err) => {
         console.log("Compte non trouve: ", err);
       });
-  }, []);
+  }, [user]);
 
   const loadVirementData = () => {
     api.get(`/operations/virement/${numCompte}`).then((rep) => {
@@ -49,6 +57,9 @@ const Virement = () => {
 
   const resetData = () => {
     setVirement({
+      type: "Virement",
+      date: new Date().toLocaleString("fr-FR"),
+      titulaire: "",
       montant: 0,
       numCompte: "",
       motif: "",
@@ -83,7 +94,6 @@ const Virement = () => {
           });
           return;
         }
-
         swal({
           title: "Succès",
           text: rep.data.message,
@@ -91,11 +101,33 @@ const Virement = () => {
           buttons: {
             confirm: {
               className: "btn btn-success",
+              text: "OK",
             },
           },
+        }).then(() => {
+          swal({
+            title: "Impression du reçu",
+            text: "Souhaitez-vous imprimer le reçu ?",
+            icon: "info",
+            buttons: {
+              cancel: {
+                text: "Non",
+                visible: true,
+                className: "btn btn-secondary",
+              },
+              confirm: {
+                text: "Oui",
+                className: "btn btn-primary",
+              },
+            },
+          }).then((willPrint) => {
+            if (willPrint) {
+              generatePDF();
+            }
+          });
+          loadVirementData();
+          resetData();
         });
-        loadVirementData();
-        resetData();
       })
       .catch((err) => {
         swal({
@@ -187,6 +219,45 @@ const Virement = () => {
     }));
   };
 
+  const generatePDF = () => {
+    const div = document.createElement("div");
+    document.body.appendChild(div);
+
+    const root = createRoot(div);
+    root.render(<Recu {...virement} />);
+
+    setTimeout(() => {
+      const opt = {
+        margin: 1,
+        filename: `recu${virement.numCompte}.pdf`,
+        html2canvas: {
+          scale: 2,
+          logging: true,
+          useCORS: true,
+        },
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+        },
+      };
+
+      html2pdf()
+        .from(div)
+        .set(opt)
+        .save()
+        .then(() => {
+          root.unmount();
+          document.body.removeChild(div);
+        })
+        .catch(() => {
+          console.error("Erreur lors de la génération du PDF");
+          root.unmount();
+          document.body.removeChild(div);
+        });
+    }, 1000);
+  };
+
   return (
     <div className="container-data">
       <form className="withdraw-form">
@@ -248,7 +319,7 @@ const Virement = () => {
         <div className="history-toolbar">
           <input type="text" placeholder="Rechercher..." />
           <div className="actions">
-            <button>📄 Exporter en PDF</button>
+            <button onClick={generatePDF}>📄 Exporter en PDF</button>
             <button>📊 Exporter en Excel</button>
             <button>🖨️ Imprimer</button>
           </div>

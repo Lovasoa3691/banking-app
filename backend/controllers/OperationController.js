@@ -1,5 +1,7 @@
 const Operation = require("../models/Operation");
 const OperationService = require("../services/OperationService");
+const MailService = require("../services/MailService");
+const { Compte, Utilisateur, Connexion } = require("../models");
 
 exports.getAll = async (req, res) => {
   try {
@@ -63,8 +65,10 @@ exports.getAllOperations = async (req, res) => {
 };
 
 exports.doRetrait = async (req, res) => {
-  const { numCompte, montant, motif, codePin } = req.body;
+  const { numCompte, montant, motif, codePin, destinataire } = req.body;
   try {
+    console.log("Valeur PIN reçu:", codePin, typeof codePin);
+
     const date = new Date();
     const formattedDate = date.toISOString().split("T")[0];
 
@@ -73,6 +77,8 @@ exports.doRetrait = async (req, res) => {
       Montant: montant,
       NumCompte: numCompte,
       Motif: motif,
+      NumDest: destinataire,
+      StatusP: "Succes",
       DateOp: formattedDate,
       Discriminator: "Retrait",
     };
@@ -156,15 +162,58 @@ exports.doPret = async (req, res) => {
   }
 };
 
+exports.findOneOperation = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const data = await OperationService.findOneOperation(id);
+    if (!data) {
+      return res.status(404).json({ message: "Operation not found" });
+    }
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.updateStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
   try {
     const updated = await OperationService.updateStatusPret(id, status);
-    if (updated) {
-      res.json({ success: true, message: "Information modifié" });
+
+    if (updated[0] > 0) {
+      const operation = await OperationService.findOneOperation(id);
+
+      if (
+        operation &&
+        operation.compte &&
+        operation.compte.client &&
+        operation.compte.client.connexion
+      ) {
+        const user = operation.compte.client;
+        const email = user.connexion.Email;
+
+        if (status === "Accorder" || status === "Accepter") {
+          await MailService.sendPretConfirmation(
+            email,
+            user.Nom,
+            operation.Montant,
+            status
+          );
+        }
+      }
+
+      return res.json({
+        success: true,
+        message: "Status mis à jour et email envoyé.",
+        data: updated,
+      });
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: "Aucun changement effectué",
+      });
     }
-    OperationService;
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

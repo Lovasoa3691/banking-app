@@ -1,3 +1,4 @@
+const { Connexion } = require("../models");
 const Utilisateur = require("../models/Utilisateur");
 const AdminService = require("../services/AdminService");
 const ClientService = require("../services/ClientService");
@@ -122,25 +123,6 @@ exports.updateClient = async (req, res) => {
   }
 };
 
-exports.register = async (req, res) => {
-  try {
-    const mdp = "lova";
-    const hashedPass = await bcrypt.hash(mdp, 10);
-
-    const user = {
-      IdCon: null,
-      Email: "fenonantenaikolovasoa@gmail.com",
-      Mdp: hashedPass,
-      UtilisateurId: 1,
-    };
-
-    const newUser = await UtilisateurService.createUser(user);
-    res.status(201).json(newUser);
-  } catch (error) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
 exports.changePassword = async (req, res) => {
   const { email, newPass } = req.body;
   try {
@@ -245,6 +227,52 @@ exports.getClientById = async (req, res) => {
     console.log(error);
     return res.status(401).json({
       message: "Erreur lors de la recuoeration des informations",
+    });
+  }
+};
+
+exports.register = async (req, res) => {
+  const { email, phone, password } = req.body;
+  if (!email || !phone || !password) {
+    return res.status(400).json({ message: "Tous les champs sont requis." });
+  }
+  try {
+    const utilisateur = await UtilisateurService.checkUser(phone);
+
+    if (!utilisateur) {
+      return res.status(404).json({
+        message:
+          "Utilisateur non trouvé. Veuillez d'abord vous enregistrer à l'agence.",
+      });
+    }
+
+    const existingConnexion = await Connexion.findOne({
+      where: { UtilisateurId: utilisateur.IdUt },
+    });
+
+    if (existingConnexion) {
+      return res
+        .status(400)
+        .json({ message: "Un compte existe déjà pour cet utilisateur." });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = {
+      IdCon: null,
+      Email: email,
+      Mdp: hashedPassword,
+      UtilisateurId: utilisateur.IdUt,
+    };
+
+    const newUser = await UtilisateurService.createUser(user);
+    res
+      .status(201)
+      .json({ message: "Votre compte a ete créé avec succès", user: newUser });
+  } catch (error) {
+    res.status(500).json({
+      text: "Erreur s'est produit lors de l'inscription",
+      message: error.message,
     });
   }
 };

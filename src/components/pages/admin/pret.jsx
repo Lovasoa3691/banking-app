@@ -71,15 +71,32 @@ const Pret = () => {
   };
 
   const updatePret = (id, state) => {
-    // console.log(id, state);
     api
       .put(`/operations/pret/${id}`, { status: state })
       .then((rep) => {
-        // console.log(rep.data);
+        swal({
+          title: "Success",
+          text: rep.data.message || "Operation reussie",
+          icon: "success",
+          buttons: {
+            confirm: {
+              className: "btn btn-success",
+            },
+          },
+        });
         loadPretData();
       })
       .catch((err) => {
-        console.log(err);
+        swal({
+          title: "Erreur",
+          text: err.response?.data?.message || "Une erreur s'est produite",
+          icon: "error",
+          buttons: {
+            confirm: {
+              className: "btn btn-danger",
+            },
+          },
+        });
       });
   };
 
