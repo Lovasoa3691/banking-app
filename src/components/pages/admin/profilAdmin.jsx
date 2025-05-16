@@ -20,23 +20,48 @@ const Profil = () => {
   }, []);
 
   const changePassword = () => {
-    // console.log(user.email, oldPass, newPass);
-    api
-      .put("/utilisateurs/utilisateur", {
-        email: user.email,
-        newPass: newPass,
-      })
-      .then((rep) => {
-        if (rep.data.success) {
-          console.log(rep.data.message);
-        }
-        console.log(rep.data.message);
-        setOldPass("");
-        setNewPass("");
-      })
-      .catch((err) => {
-        console.log("Erreur lors du changement de mot de passe: ", err);
-      });
+    swal({
+      title: "Confirmer la modification",
+      text: "Es-tu sûr de vouloir changer ton mot de passe ?",
+      icon: "warning",
+      buttons: ["Annuler", "Oui, confirmer"],
+      dangerMode: true,
+    }).then((willChange) => {
+      if (willChange) {
+        api
+          .put("/utilisateurs/utilisateur", {
+            email: user.email,
+            newPass: newPass,
+          })
+          .then((rep) => {
+            if (rep.data.success) {
+              swal({
+                title: "Mot de passe changé avec succès",
+                icon: "success",
+                button: "OK",
+              });
+            } else {
+              swal({
+                title: "Erreur",
+                text: rep.data.message,
+                icon: "error",
+                button: "OK",
+              });
+            }
+            setOldPass("");
+            setNewPass("");
+          })
+          .catch((err) => {
+            console.log("Erreur lors du changement de mot de passe: ", err);
+            swal({
+              title: "Erreur serveur",
+              text: "Une erreur est survenue, réessaie plus tard.",
+              icon: "error",
+              button: "OK",
+            });
+          });
+      }
+    });
   };
 
   const deleteAccount = () => {
@@ -98,7 +123,7 @@ const Profil = () => {
           Mettre à jour
         </button>
       </section>
-      <section>
+      {/* <section>
         <h3>Sécurité</h3>
         <p>
           <strong>2FA :</strong> <button className="btn">Activer</button>
@@ -107,7 +132,7 @@ const Profil = () => {
           <strong>Dernière connexion :</strong> 21 avril 2025 à 12h45 depuis IP
           192.168.1.12
         </p>
-      </section>
+      </section> */}
       <section className="danger-zone">
         <h3>Zone sensible</h3>
         <button className="btn btn-danger">Supprimer mon compte</button>

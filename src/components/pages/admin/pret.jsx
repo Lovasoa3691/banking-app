@@ -12,6 +12,8 @@ import {
   faFileExcel,
   faEdit,
   faPlus,
+  faCheck,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import { Tooltip } from "react-tooltip";
@@ -20,11 +22,11 @@ const Pret = () => {
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
   const [pret, setPret] = useState({
-    montant: 0,
+    montant: "",
     numCompte: "",
     duree: "",
     motif: "",
-    revenu: 0,
+    revenu: "",
   });
 
   const [numCompte, setNumCompte] = useState("");
@@ -56,7 +58,6 @@ const Pret = () => {
 
   const loadPretData = () => {
     api.get(`/operations/pret`).then((rep) => {
-      // console.log(rep.data);
       setPretData(rep.data);
     });
   };
@@ -70,49 +71,121 @@ const Pret = () => {
     setPret({ ...pret, [name]: value });
   };
 
+  const deleteHistorique = (numOp) => {
+    swal({
+      title: "Êtes-vous sûr ?",
+      text: "Une fois supprimé, vous ne pourrez plus récupérer cet information !",
+      icon: "warning",
+      buttons: {
+        confirm: {
+          text: "Oui",
+          // className: "btn btn-success",
+        },
+        cancel: {
+          text: "Non",
+          visible: true,
+          // className: "btn btn-danger",
+        },
+      },
+    }).then((willDelete) => {
+      if (willDelete) {
+        api.delete(`operations/historique/${numOp}`).then((rep) => {
+          if (rep.data.success) {
+            swal(`${rep.data.message}`, {
+              icon: "success",
+              buttons: {
+                confirm: {
+                  className: "btn btn-success",
+                },
+              },
+            });
+            loadPretData();
+          } else {
+            swal(`${rep.data.message}`, {
+              icon: "error",
+              buttons: {
+                confirm: {
+                  className: "btn btn-success",
+                },
+              },
+            });
+            loadPretData();
+          }
+        });
+      } else {
+        swal.close();
+      }
+    });
+  };
+
   const updatePret = (id, state) => {
-    api
-      .put(`/operations/pret/${id}`, { status: state })
-      .then((rep) => {
-        swal({
-          title: "Success",
-          text: rep.data.message || "Operation reussie",
-          icon: "success",
-          buttons: {
-            confirm: {
-              className: "btn btn-success",
+    if (state === "Supprimer") {
+      deleteHistorique(id);
+    } else {
+      api
+        .put(`/operations/pret/${id}`, { status: state })
+        .then((rep) => {
+          swal({
+            title: "Succes",
+            text: rep.data.message || "Operation reussie",
+            icon: "success",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
             },
-          },
-        });
-        loadPretData();
-      })
-      .catch((err) => {
-        swal({
-          title: "Erreur",
-          text: err.response?.data?.message || "Une erreur s'est produite",
-          icon: "error",
-          buttons: {
-            confirm: {
-              className: "btn btn-danger",
+          });
+          loadPretData();
+        })
+        .catch((err) => {
+          swal({
+            title: "Erreur",
+            text: err.response?.data?.message || "Une erreur s'est produite",
+            icon: "error",
+            buttons: {
+              confirm: {
+                className: "btn btn-danger",
+              },
             },
-          },
+          });
         });
-      });
+    }
   };
 
   const options = [
     { value: "En attente", label: "En attente" },
-    { value: "Approuver", label: "Approuver" },
-    { value: "Refuse", label: "Refuse" },
+    { value: "Accepte", label: "Accepter" },
+    { value: "Refuse", label: "Refuser" },
   ];
+
+  const [selectedStatus, setSelectedStatus] = useState(null);
+
+  const filteredPretData = selectedStatus
+    ? pretData.filter((item) => item.StatusP === selectedStatus)
+    : pretData;
 
   return (
     <div className="container-data">
-      <h2 style={{ textAlign: "start" }}>Liste des demandes de pret recus</h2>
+      <h2 style={{ textAlign: "start" }}>Liste des demandes de prêt reçues</h2>
 
       <div className="transaction-history">
         <div className="history-toolbar">
-          <div styles={{ width: "100px" }}></div>
+          <div style={{ width: "250px", marginBottom: "15px" }}>
+            <Select
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  width: 250,
+                }),
+              }}
+              options={options}
+              placeholder="Filtrer par statut"
+              onChange={(option) =>
+                setSelectedStatus(option ? option.value : null)
+              }
+              isClearable
+            />
+          </div>
         </div>
 
         <table className="custom-table">
@@ -128,8 +201,8 @@ const Pret = () => {
             </tr>
           </thead>
           <tbody>
-            {pretData && pretData.length > 0 ? (
-              pretData.map((item) => (
+            {filteredPretData && filteredPretData.length > 0 ? (
+              filteredPretData.map((item) => (
                 <tr
                   // data-tooltip-content={`Client : ${
                   //   item.Client.Nom + " " + item.Client.Prenom
@@ -137,7 +210,7 @@ const Pret = () => {
                   // data-tooltip-id="numCompte"
                   key={item.NumOp}
                 >
-                  <td>{item.NumCompte}</td>
+                  <td>{item.NumCompte.replace(/(.{4})/g, "$1 ").trim()}</td>
                   <td>{item.DateOp}</td>
                   <td>{item.Motif}</td>
                   <td>
@@ -159,19 +232,52 @@ const Pret = () => {
                         border: "1px solid #ccc",
                       }}
                       onChange={(e) => updatePret(item.NumOp, e.target.value)}
+                      defaultValue=""
                     >
-                      <option defaultValue={"Choisir"} disabled selected>
+                      <option value="" disabled>
                         Choisir
                       </option>
-                      <option value="Accepte">Accepter</option>
-                      <option value="Refuse">Refuser</option>
-                      <option value="Supprimer">Supprimer</option>
+                      <option
+                        value="Accepte"
+                        disabled={
+                          item.StatusP === "Accepte" ||
+                          item.StatusP === "Refuse"
+                        }
+                      >
+                        <FontAwesomeIcon icon={faCheck} />
+                        Accepter
+                      </option>
+                      <option
+                        value="Refuse"
+                        disabled={
+                          item.StatusP === "Accepte" ||
+                          item.StatusP === "Refuse"
+                        }
+                      >
+                        <FontAwesomeIcon icon={faTimes} />
+                        Refuser
+                      </option>
+                      <option value="Supprimer">
+                        <FontAwesomeIcon icon={faTrash} />
+                        Supprimer
+                      </option>
                     </select>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr></tr>
+              <tr>
+                <td
+                  colSpan={6}
+                  style={{
+                    textAlign: "center",
+                    fontStyle: "italic",
+                    padding: "20px",
+                  }}
+                >
+                  Aucune donnée trouvée.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

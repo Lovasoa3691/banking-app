@@ -1,21 +1,27 @@
 const { Compte } = require("../models");
 const CompteService = require("../services/CompteService");
+const bcrypt = require("bcrypt");
 
 exports.createCompte = async (req, res) => {
-  const { numCompte, taux, decouverte, type, idClient } = req.body;
+  const { numCompte, taux, decouverte, type, idClient, solde } = req.body;
   try {
     const date = new Date();
     const formattedDate = date.toISOString().split("T")[0];
 
+    const pin = Math.floor(1000 + Math.random() * 9000).toString();
+
+    const hashedPin = await bcrypt.hash(pin, 10);
+
     const data = {
       NumCompte: numCompte,
-      Solde: 0.0,
+      Solde: solde,
       DateOuverture: formattedDate,
       StatusCompte: "Actif",
-      Decouverte: decouverte,
+      Decouvert: decouverte,
       Taux: taux,
       UtilisateurClient: idClient,
       Discriminator: type,
+      Pin: hashedPin,
     };
 
     const newCompte = await CompteService.createCompte(data);
@@ -23,9 +29,26 @@ exports.createCompte = async (req, res) => {
       success: true,
       message: "Compte créé avec succès",
       compte: newCompte,
+      codePin: pin,
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+exports.checkExistingCompte = async (req, res) => {
+  const { numCompte } = req.body;
+
+  try {
+    const existing = await CompteService.findByNumCompte(numCompte);
+
+    if (existing) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

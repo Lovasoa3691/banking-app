@@ -11,6 +11,7 @@ import {
   faFileExcel,
   faEdit,
   faPlus,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 
@@ -23,7 +24,7 @@ const Client = () => {
     cin: "",
     prenom: "",
     adresse: "",
-    telephone: "",
+    telephone: "+261",
     profession: "",
   });
 
@@ -86,7 +87,7 @@ const Client = () => {
       cin: "",
       prenom: "",
       adresse: "",
-      telephone: "",
+      telephone: "+261",
       profession: "",
     });
   };
@@ -95,23 +96,47 @@ const Client = () => {
     loadClientData();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setData({ ...data, [name]: value });
-  };
-
   const saveClient = () => {
     // console.log(pret);
     api
       .post("/utilisateurs/client", data)
       .then((rep) => {
-        // console.log(rep.data);
+        if (rep.data.success) {
+          swal(`${rep.data.message}`, {
+            icon: "success",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
+            },
+          });
+        } else {
+          swal(`${rep.data.message}`, {
+            icon: "error",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
+            },
+          });
+        }
+        setIsActive(false);
         loadClientData();
         resetData();
-        setIsActive(false);
       })
       .catch((err) => {
-        console.log(err);
+        const errorMsg =
+          err.response && err.response.data && err.response.data.message
+            ? err.response.data.message
+            : "Une erreur est survenue.";
+        swal(errorMsg, {
+          icon: "error",
+          buttons: {
+            confirm: {
+              className: "btn btn-danger",
+            },
+          },
+        });
       });
   };
 
@@ -120,13 +145,42 @@ const Client = () => {
     api
       .put(`/utilisateurs/client/${data.id}`, data)
       .then((rep) => {
-        // console.log(rep.data);
+        if (rep.data.success) {
+          swal(`${rep.data.message}`, {
+            icon: "success",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
+            },
+          });
+        } else {
+          swal(`${rep.data.message}`, {
+            icon: "error",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+              },
+            },
+          });
+        }
         setIsEditActive(false);
         loadClientData();
         resetData();
       })
       .catch((err) => {
-        console.log(err);
+        const errorMsg =
+          err.response && err.response.data && err.response.data.message
+            ? err.response.data.message
+            : "Une erreur est survenue.";
+        swal(errorMsg, {
+          icon: "error",
+          buttons: {
+            confirm: {
+              className: "btn btn-danger",
+            },
+          },
+        });
       });
   };
 
@@ -183,189 +237,379 @@ const Client = () => {
     { value: "Refuse", label: "Refuse" },
   ];
 
+  const [numCin, setNumCin] = useState("");
+  const [cinError, setCinError] = useState("");
+
+  const handleChangeCin = (e) => {
+    let input = e.target.value;
+
+    input = input.replace(/\D/g, "");
+
+    const validRanges = [
+      [101, 119],
+      [201, 209],
+      [301, 323],
+      [401, 421],
+      [501, 518],
+      [601, 621],
+    ];
+
+    const prefix = input.slice(0, 3);
+    const prefixNum = parseInt(prefix, 10);
+
+    const isValidPrefix = validRanges.some(
+      ([start, end]) => prefixNum >= start && prefixNum <= end
+    );
+
+    const formatted = input.match(/.{1,3}/g);
+    const result = formatted ? formatted.join(" ") : "";
+
+    if (input.length >= 3 && !isValidPrefix) {
+      setCinError("Préfixe CIN invalide !");
+    } else {
+      setCinError("");
+    }
+
+    setNumCin(result);
+
+    setData((prev) => ({
+      ...prev,
+      cin: result,
+    }));
+  };
+
+  const formatPhoneNumber = (input) => {
+    let digits = input.replace(/\D/g, "");
+
+    if (digits.startsWith("261")) {
+      digits = digits.substring(3);
+    }
+
+    let formatted = "+261";
+    if (digits.length > 0) formatted += " " + digits.substring(0, 2);
+    if (digits.length > 2) formatted += " " + digits.substring(2, 4);
+    if (digits.length > 4) formatted += " " + digits.substring(4, 7);
+    if (digits.length > 7) formatted += " " + digits.substring(7, 9);
+
+    return formatted.trim();
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "telephone") {
+      const formattedPhone = formatPhoneNumber(value);
+      setData((prevData) => ({
+        ...prevData,
+        [name]: formattedPhone,
+      }));
+    } else {
+      setData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
+  };
+
+  const [phoneError, setPhoneError] = useState("");
+
+  useEffect(() => {
+    const regex = /^\+261 (32|33|34|38) \d{2} \d{3} \d{2}$/;
+    const { telephone } = data;
+
+    if (telephone.trim() === "+261") {
+      setPhoneError("");
+    } else if (!regex.test(telephone)) {
+      setPhoneError("Numéro invalide. Format attendu : +261 34 74 481 02");
+    } else {
+      setPhoneError("");
+    }
+  }, [data.telephone]);
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredClients = clientData.filter((client) =>
+    (
+      client.Nom +
+      " " +
+      client.Prenom +
+      " " +
+      client.Cin +
+      " " +
+      client.Adresse +
+      " " +
+      client.Telephone +
+      " " +
+      client.Profession
+    )
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="container-data">
-      <h2 style={{ textAlign: "start" }}>Liste des clients enregistres</h2>
+      <h2 style={{ textAlign: "start" }}>Liste des clients enregistrés</h2>
 
       {isActive && (
-        <div className="modal">
-          <form className="">
-            <h2>Nouveau Client</h2>
-            <div className="form-group">
-              <label htmlFor="numCompte">Nom</label>
-              <input
-                type="text"
-                name="nom"
-                disabled
-                id="nom"
-                value={data.nom}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Prenom</label>
-              <input
-                // style={{ backgroundColor: "#fffcc8" }}
-                type="text"
-                placeholder="Prenom"
-                onChange={handleChange}
-                name="prenom"
-                value={data.prenom}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Numero de Carte d'identite</label>
-              <input
-                // style={{ backgroundColor: "#fffcc8" }}
-                type="text"
-                placeholder="Carte d'identité nationale"
-                onChange={handleChange}
-                name="cin"
-                value={data.cin}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Adresse</label>
-              <input
-                type="text"
-                name="adresse"
-                value={data.adresse}
-                onChange={handleChange}
-                placeholder="Adresse"
-                // min="0"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Numero telephone</label>
-              <input
-                type="text"
-                name="telephone"
-                value={data.telephone}
-                onChange={handleChange}
-                placeholder="Numero de telephone"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Profession</label>
-              <input
-                type="text"
-                name="profession"
-                value={data.profession}
-                onChange={handleChange}
-                placeholder="Profession"
-              />
-            </div>
-            <div className="btn-save">
-              <button
-                type="button"
-                onClick={() => {
-                  saveClient();
-                }}
+        <div className="modal-overlay">
+          <div className="modal">
+            <form className="">
+              <div
                 style={{
-                  fontSize: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <FontAwesomeIcon icon={faSave} />
-              </button>
-            </div>
-          </form>
+                <h2>Nouveau Client</h2>
+                <FontAwesomeIcon
+                  onClick={() => setIsActive(false)}
+                  size="2x"
+                  style={{ color: "red" }}
+                  icon={faTimes}
+                />
+              </div>
+              <br />
+
+              <div className="form-group">
+                <label htmlFor="numCompte">Nom</label>
+                <input
+                  type="text"
+                  name="nom"
+                  required
+                  id="nom"
+                  placeholder="Nom"
+                  value={data.nom}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Prenom</label>
+                <input
+                  // style={{ backgroundColor: "#fffcc8" }}
+                  required
+                  type="text"
+                  placeholder="Prenom"
+                  onChange={handleChange}
+                  name="prenom"
+                  value={data.prenom}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Numero de Carte d'identite</label>
+                <input
+                  required
+                  // style={{ backgroundColor: "#fffcc8" }}
+                  type="text"
+                  placeholder="Carte d'identité nationale"
+                  onChange={handleChangeCin}
+                  name="cin"
+                  value={numCin}
+                  maxLength={15}
+                />
+              </div>
+              {cinError && (
+                <span
+                  style={{
+                    textAlign: "center",
+                    color: "red",
+                    paddingBottom: "5px",
+                  }}
+                >
+                  {cinError}
+                </span>
+              )}
+
+              <div className="form-group">
+                <label htmlFor="numCompte">Adresse</label>
+                <input
+                  required
+                  type="text"
+                  name="adresse"
+                  value={data.adresse}
+                  onChange={handleChange}
+                  placeholder="Adresse"
+                  // min="0"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Numero telephone</label>
+                <input
+                  required
+                  type="text"
+                  name="telephone"
+                  value={data.telephone}
+                  onChange={handleChange}
+                  placeholder="Numero de telephone"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Profession</label>
+                <input
+                  required
+                  type="text"
+                  name="profession"
+                  value={data.profession}
+                  onChange={handleChange}
+                  placeholder="Profession"
+                />
+              </div>
+              <div className="btn-save">
+                <button
+                  type="button"
+                  onClick={() => {
+                    saveClient();
+                  }}
+                  style={{
+                    fontSize: "20px",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faSave} />
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
       {isEditActive && (
-        <div className="modal">
-          <form className="">
-            <h2>Modifier information du client</h2>
-            <div className="form-group">
-              <label htmlFor="numCompte">Nom</label>
-              <input
-                type="text"
-                name="nom"
-                disabled
-                id="nom"
-                value={data.nom}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Prenom</label>
-              <input
-                // style={{ backgroundColor: "#fffcc8" }}
-                type="text"
-                placeholder="Prenom"
-                onChange={handleChange}
-                name="prenom"
-                value={data.prenom}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Numero de Carte d'identite</label>
-              <input
-                // style={{ backgroundColor: "#fffcc8" }}
-                type="text"
-                placeholder="Carte d'identité nationale"
-                onChange={handleChange}
-                name="cin"
-                value={data.cin}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Adresse</label>
-              <input
-                type="text"
-                name="adresse"
-                value={data.adresse}
-                onChange={handleChange}
-                placeholder="Adresse"
-                // min="0"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Numero telephone</label>
-              <input
-                type="text"
-                name="telephone"
-                value={data.telephone}
-                onChange={handleChange}
-                placeholder="Numero de telephone"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Profession</label>
-              <input
-                type="text"
-                name="profession"
-                value={data.profession}
-                onChange={handleChange}
-                placeholder="Profession"
-              />
-            </div>
-            <div className="btn-save">
-              <button
-                type="button"
-                onClick={() => {
-                  updateClient();
-                }}
+        <div className="modal-overlay">
+          <div className="modal">
+            <form className="">
+              <div
                 style={{
-                  fontSize: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <FontAwesomeIcon icon={faSave} />
-              </button>
-            </div>
-          </form>
+                <h2>Modification</h2>
+                <FontAwesomeIcon
+                  onClick={() => setIsEditActive(false)}
+                  size="2x"
+                  style={{ color: "red" }}
+                  icon={faTimes}
+                />
+              </div>
+              <br />
+
+              <div className="form-group">
+                <label htmlFor="numCompte">Nom</label>
+                <input
+                  type="text"
+                  required
+                  name="nom"
+                  placeholder="Nom"
+                  id="nom"
+                  value={data.nom}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Prenom</label>
+                <input
+                  required
+                  // style={{ backgroundColor: "#fffcc8" }}
+                  type="text"
+                  placeholder="Prenom"
+                  onChange={handleChange}
+                  name="prenom"
+                  value={data.prenom}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Numero de carte d'identite</label>
+                <input
+                  required
+                  // style={{ backgroundColor: "#fffcc8" }}
+                  type="text"
+                  placeholder="Carte d'identité nationale"
+                  onChange={handleChange}
+                  name="cin"
+                  value={data.cin}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Adresse</label>
+                <input
+                  required
+                  type="text"
+                  name="adresse"
+                  value={data.adresse}
+                  onChange={handleChange}
+                  placeholder="Adresse"
+                  // min="0"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Numero telephone</label>
+                <input
+                  required
+                  type="text"
+                  name="telephone"
+                  value={data.telephone}
+                  onChange={handleChange}
+                  placeholder="Numero de telephone"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Profession</label>
+                <input
+                  required
+                  type="text"
+                  name="profession"
+                  value={data.profession}
+                  onChange={handleChange}
+                  placeholder="Profession"
+                />
+              </div>
+              <div className="btn-save">
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateClient();
+                  }}
+                  style={{
+                    fontSize: "20px",
+                  }}
+                >
+                  <FontAwesomeIcon icon={faSave} />
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
       <div className="transaction-history">
         <div className="history-toolbar">
           <div styles={{ width: "100px" }}>
-            <div className="action">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "730px",
+              }}
+            >
               <button onClick={openModal}>
                 {" "}
                 <FontAwesomeIcon icon={faPlus} />
                 &nbsp;&nbsp; Ajouter client
               </button>
+
+              <div style={{ paddingTop: "10px" }}>
+                <input
+                  style={{
+                    padding: "12px",
+                    width: "100%",
+                    marginBottom: "10px",
+                  }}
+                  type="text"
+                  placeholder="Recherche"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
             {/* <Select
               styles={{
@@ -405,8 +649,8 @@ const Client = () => {
             </tr>
           </thead>
           <tbody>
-            {clientData && clientData.length > 0 ? (
-              clientData.map((item) => (
+            {filteredClients && filteredClients.length > 0 ? (
+              filteredClients.map((item) => (
                 <tr key={item.IdUt}>
                   <td>{item.Cin}</td>
                   <td>{item.Nom}</td>
@@ -414,14 +658,6 @@ const Client = () => {
                   <td>{item.Adresse}</td>
                   <td>{item.Telephone}</td>
                   <td>{item.Profession}</td>
-                  {/* <td>
-                    {item.Montant.toLocaleString("fr-FR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}{" "}
-                    Ar
-                  </td> */}
-                  {/* <td>{item.StatusP}</td> */}
                   <td
                     style={{
                       color: "red",
@@ -430,20 +666,25 @@ const Client = () => {
                     }}
                   >
                     <FontAwesomeIcon
-                      // onClick={() => updateClient(item.NumOp)}
                       icon={faEdit}
                       onClick={() => openEditModal(item)}
                     />
-                    {/* &nbsp;&nbsp;&nbsp;
-                    <FontAwesomeIcon
-                      onClick={() => deleteClient(item.IdUt)}
-                      icon={faTrash}
-                    /> */}
                   </td>
                 </tr>
               ))
             ) : (
-              <tr></tr>
+              <tr>
+                <td
+                  colSpan={7}
+                  style={{
+                    textAlign: "center",
+                    fontStyle: "italic",
+                    padding: "20px",
+                  }}
+                >
+                  Aucune donnée trouvée.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

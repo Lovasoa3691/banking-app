@@ -9,6 +9,8 @@ import {
   faFilePdf,
   faSave,
   faFileExcel,
+  faShare,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 
@@ -59,11 +61,11 @@ const Pret = () => {
 
   const resetData = () => {
     setPret({
-      montant: 0,
+      montant: "",
       numCompte: "",
       duree: "",
       motif: "",
-      revenu: 0,
+      revenu: "",
       codePin: "",
     });
   };
@@ -109,6 +111,7 @@ const Pret = () => {
         resetData();
       })
       .catch((err) => {
+        console.log(err.message);
         swal({
           title: "Erreur",
           text: err.response?.data?.message || "Une erreur s'est produite",
@@ -171,9 +174,15 @@ const Pret = () => {
 
   const options = [
     { value: "En attente", label: "En attente" },
-    { value: "Approuver", label: "Approuver" },
-    { value: "Refuse", label: "Refuse" },
+    { value: "Accepte", label: "Accepter" },
+    { value: "Refuse", label: "Refuser" },
   ];
+
+  const [selectedStatus, setSelectedStatus] = useState(null);
+
+  const filteredPretData = selectedStatus
+    ? pretData.filter((item) => item.StatusP === selectedStatus)
+    : pretData;
 
   return (
     <div className="container-data">
@@ -190,11 +199,15 @@ const Pret = () => {
         />
         <input
           style={{ backgroundColor: "#fffcc8" }}
-          type="text"
-          placeholder="Numéro de compte"
           disabled
+          type="text"
           name="numCompte"
-          value={clientInfo.NumCompte}
+          value={
+            clientInfo.NumCompte
+              ? clientInfo.NumCompte.replace(/(.{4})/g, "$1 ").trim()
+              : ""
+          }
+          placeholder="Numéro de compte"
         />
         <input
           type="number"
@@ -230,9 +243,9 @@ const Pret = () => {
           name="codePin"
           value={pret.codePin}
           placeholder="Code PIN"
-          inputMode="numeric" // affiche le pavé numérique sur mobile
-          pattern="[0-9]*" // hint pour le navigateur
-          maxLength={4} // si le code PIN est à 4 chiffres
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={4}
           onChange={(e) => {
             const onlyNums = e.target.value.replace(/\D/, "");
             setPret({ ...pret, codePin: onlyNums });
@@ -248,14 +261,14 @@ const Pret = () => {
             fontSize: "20px",
           }}
         >
-          <FontAwesomeIcon icon={faSave} />
-          {/* Soumettre la demande */}
+          <FontAwesomeIcon icon={faShare} />
+          &nbsp;&nbsp; Envoyer
         </button>
       </form>
 
       <div className="transaction-history">
         <div className="history-toolbar">
-          <div styles={{ width: "100px" }}>
+          <div style={{ width: "250px", marginBottom: "15px" }}>
             <Select
               styles={{
                 control: (base) => ({
@@ -264,10 +277,15 @@ const Pret = () => {
                 }),
               }}
               options={options}
+              placeholder="Filtrer par statut"
+              onChange={(option) =>
+                setSelectedStatus(option ? option.value : null)
+              }
+              isClearable
             />
           </div>
 
-          <div className="actions">
+          {/* <div className="actions">
             <button>
               <FontAwesomeIcon icon={faFilePdf} />
             </button>
@@ -277,7 +295,7 @@ const Pret = () => {
             <button>
               <FontAwesomeIcon icon={faPrint} />
             </button>
-          </div>
+          </div> */}
         </div>
 
         <table className="custom-table">
@@ -291,8 +309,8 @@ const Pret = () => {
             </tr>
           </thead>
           <tbody>
-            {pretData && pretData.length > 0 ? (
-              pretData.map((item) => (
+            {filteredPretData && filteredPretData.length > 0 ? (
+              filteredPretData.map((item) => (
                 <tr key={item.NumOp}>
                   <td>{item.DateOp}</td>
                   <td>{item.Motif}</td>
@@ -313,13 +331,24 @@ const Pret = () => {
                   >
                     <FontAwesomeIcon
                       onClick={() => deleteHistorique(item.NumOp)}
-                      icon={faTrash}
+                      icon={faTimes}
                     />
                   </td>
                 </tr>
               ))
             ) : (
-              <tr></tr>
+              <tr>
+                <td
+                  colSpan={8}
+                  style={{
+                    textAlign: "center",
+                    fontStyle: "italic",
+                    padding: "20px",
+                  }}
+                >
+                  Aucune donnée trouvée.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

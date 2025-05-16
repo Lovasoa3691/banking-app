@@ -24,6 +24,7 @@ router.post("/compte", verifyToken, CompteController.createCompte);
 router.post("/retrait", verifyToken, controller.doRetrait);
 router.post("/virement", verifyToken, controller.doVirement);
 router.post("/pret", verifyToken, controller.doPret);
+router.post("/check", CompteController.checkExistingCompte);
 
 router.put("/pret/:id", verifyToken, controller.updateStatus);
 router.put("/compte/:id", verifyToken, CompteController.updateCompte);

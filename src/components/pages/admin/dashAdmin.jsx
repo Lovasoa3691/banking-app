@@ -105,7 +105,7 @@ const Dashboard = () => {
             <br />
             <br />
             <strong style={{ fontSize: "40px", fontWeight: "bold" }}>
-              {totalClient}
+              {totalClient || 0}
             </strong>
           </div>
           <FontAwesomeIcon style={{ fontSize: "60px" }} icon={faUser} />
@@ -129,7 +129,7 @@ const Dashboard = () => {
             <br />
             <br />
             <strong style={{ fontSize: "40px", fontWeight: "bold" }}>
-              {totalCompte}
+              {totalCompte || 0}
             </strong>
           </div>
           <FontAwesomeIcon style={{ fontSize: "60px" }} icon={faFolderOpen} />
@@ -153,11 +153,12 @@ const Dashboard = () => {
             <br />
             <br />
             <strong style={{ fontSize: "40px", fontWeight: "bold" }}>
-              {totalSolde.toLocaleString("fr-FR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}{" "}
-              Ar
+              {totalSolde != null
+                ? `${totalSolde.toLocaleString("fr-FR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })} Ar`
+                : "0 Ar"}
             </strong>
           </div>
           <FontAwesomeIcon
@@ -219,7 +220,7 @@ const Dashboard = () => {
               {operationData && operationData.length > 0 ? (
                 operationData.map((item) => (
                   <tr key={item.NumOp}>
-                    <td>{item.NumCompte}</td>
+                    <td>{item.NumCompte.replace(/(.{4})/g, "$1 ").trim()}</td>
                     <td>{item.DateOp}</td>
                     <td>{item.Discriminator}</td>
                     <td>
@@ -232,7 +233,18 @@ const Dashboard = () => {
                   </tr>
                 ))
               ) : (
-                <tr></tr>
+                <tr>
+                  <td
+                    colSpan={4}
+                    style={{
+                      textAlign: "center",
+                      fontStyle: "italic",
+                      padding: "20px",
+                    }}
+                  >
+                    Aucune donnée trouvée.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

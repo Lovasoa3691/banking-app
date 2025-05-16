@@ -6,8 +6,11 @@ import { Bar } from "react-chartjs-2";
 import LineChart from "../../../assets/chart/line";
 import api from "../../api/api";
 import LineChartClient from "../../../assets/chart/lineClient";
+import { replace, useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
 
@@ -29,9 +32,8 @@ const Dashboard = () => {
     api
       .get(`/utilisateurs`)
       .then((rep) => {
-        // console.log(rep.data.client);
         setClientInfo(rep.data.client);
-        // pret.numCompte = rep.data.client.NumCompte;
+
         setNumCompte(rep.data.client.NumCompte);
       })
       .catch((err) => {
@@ -43,7 +45,6 @@ const Dashboard = () => {
     api
       .get(`/operations/client/${numCompte}`)
       .then((rep) => {
-        // console.log(rep.data);
         setOperations(rep.data);
       })
       .catch((err) => {
@@ -51,10 +52,8 @@ const Dashboard = () => {
       });
   }, [numCompte]);
 
-  const loadVirementData = () => {
-    api.get(`/operations/virement/${numCompte}`).then((rep) => {
-      // setVirementData(rep.data);
-    });
+  const changeMenu = (path) => {
+    navigate(`/client/${path}`, replace);
   };
 
   return (
@@ -72,8 +71,14 @@ const Dashboard = () => {
           <br />
           <br />
           <span>
-            N Compte : <strong>{clientInfo.NumCompte}</strong>
+            N Compte :{" "}
+            <strong>
+              {numCompte
+                ? numCompte.replace(/(.{4})/g, "$1 ").trim()
+                : "Chargement..."}
+            </strong>
           </span>
+
           <br />
           <br />
           <span>
@@ -111,66 +116,46 @@ const Dashboard = () => {
                 <span style={{ fontSize: "30px" }}>Solde actuel</span>
                 <br />
                 <strong style={{ fontSize: "40px" }}>
-                  {clientInfo.Solde}
-                  Ar
+                  {clientInfo.Solde !== undefined
+                    ? clientInfo.Solde.toLocaleString("fr-FR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }) + " Ar"
+                    : "Chargement..."}
                 </strong>
               </div>
             </div>
-            <div className="item">
+            {/* <div className="item">
               <button type="button">Afficher historique</button>
-            </div>
+            </div> */}
           </div>
         </div>
 
         <div className="card-box">
-          <button type="button">
+          <button type="button" onClick={() => changeMenu("virement")}>
             {" "}
             <i className="fa-solid fa-chart-line"></i>&nbsp;&nbsp; Virement
           </button>
           &nbsp;&nbsp;
-          <button type="button">
+          <button type="button" onClick={() => changeMenu("retrait")}>
             <i className="fa-solid fa-money-bill-wave"></i>&nbsp;&nbsp; Retrait
           </button>
           &nbsp;&nbsp;
-          <button type="button">
-            <i className="fa-solid fa-right-left"></i>&nbsp;&nbsp; Transfert
+          <button type="button" onClick={() => changeMenu("pret")}>
+            <i className="fa-solid fa-right-left"></i>&nbsp;&nbsp; Pret
           </button>
         </div>
       </div>
 
       <div>
         <div className="tableContent">
-          <div className="connectivity">
-            <div className="card-box">
-              <span>Status de securite</span>
-              <br />
-              <br />
-              <span>
-                <i className="fa-solid fa-lock"></i>
-                &nbsp;&nbsp;Authentification 2FA:
-                <strong>Desactive</strong>
-              </span>{" "}
-              <br />
-              <br />
-              <strong>
-                <i className="fa-solid fa-mobile"></i> &nbsp;&nbsp;Appareil lie
-                : Redmi 6 Pro
-              </strong>
-              <br />
-              <br />
-              <span>
-                <i className="fa-solid fa-clock"></i> &nbsp;&nbsp;
-                <strong></strong>Derniere connection : <br /> le 01/02/2019
-                12:43:45
-              </span>
-              <br />
-              <br />
+          {!numCompte ? (
+            <p>Chargement...</p>
+          ) : (
+            <div className="table">
+              <LineChartClient numCompte={numCompte} />
             </div>
-          </div>
-
-          <div className="table">
-            <LineChartClient numCompte={clientInfo.NumCompte} />
-          </div>
+          )}
         </div>
 
         <div className="table">
@@ -201,7 +186,18 @@ const Dashboard = () => {
                   </tr>
                 ))
               ) : (
-                <tr></tr>
+                <tr>
+                  <td
+                    colSpan={8}
+                    style={{
+                      textAlign: "center",
+                      fontStyle: "italic",
+                      padding: "20px",
+                    }}
+                  >
+                    Aucune donnée trouvée.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

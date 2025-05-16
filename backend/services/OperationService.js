@@ -1,12 +1,7 @@
 const { Compte, Operation, Utilisateur, Connexion } = require("../models");
+const bcrypt = require("bcrypt");
 
 class OperationService {
-  static async createCompte(data) {
-    return Compte.create({
-      ...data,
-    });
-  }
-
   static async doWithdraw(data) {
     return Operation.create({
       ...data,
@@ -17,10 +12,13 @@ class OperationService {
     const compte = await Compte.findOne({
       where: { NumCompte: num },
     });
+
     if (!compte) {
       throw new Error("Compte introuvable");
     }
-    if (String(compte.Pin) !== String(pin)) {
+
+    const pinIsValid = await bcrypt.compare(pin, compte.Pin);
+    if (!pinIsValid) {
       throw new Error("Code PIN incorrect");
     }
 

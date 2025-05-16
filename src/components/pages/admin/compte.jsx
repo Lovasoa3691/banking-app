@@ -11,34 +11,31 @@ import {
   faFileExcel,
   faEdit,
   faPlus,
+  faEyeSlash,
+  faEye,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import { Tooltip } from "react-tooltip";
 
 const Compte = () => {
   const [user, setUser] = useState({});
-  const [clientInfo, setClientInfo] = useState({});
   const [compte, setcompte] = useState({
     idClient: "",
     solde: 0,
     numCompte: "",
     type: "",
-    decouverte: 0,
-    taux: 0,
+    decouverte: "",
+    taux: "",
   });
 
-  const [numCompte, setNumCompte] = useState("");
   const [compteData, setCompteData] = useState([]);
 
   const [numeroCompte, setNumeroCompte] = useState("");
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState([]);
 
   const [isActive, setIsActive] = useState(false);
   const [isEditActive, setIsEditActive] = useState(false);
-
-  const openModal = () => {
-    setIsActive(true);
-  };
 
   const openEditModal = (item) => {
     setIsEditActive(true);
@@ -65,15 +62,31 @@ const Compte = () => {
     return numero.match(/.{1,4}/g).join(" ");
   };
 
-  useEffect(() => {
-    setNumeroCompte(genererNumeroCompte());
-  }, []);
+  const verifierEtGenererNumeroUnique = async () => {
+    let tentative = 0;
+    let numero;
+    let existe = true;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const numeroSansEspaces = numeroCompte.replace(/\s/g, "");
-    // console.log("Numéro de compte (brut) :", numeroSansEspaces);
+    while (existe && tentative < 10) {
+      numero = genererNumeroCompte();
+      const response = await api.post("operations/check", {
+        numCompte: numero.replace(/ /g, ""),
+      });
+
+      existe = response.data.exists;
+      tentative++;
+    }
+
+    return numero;
   };
+
+  useEffect(() => {
+    const initialiser = async () => {
+      const numeroUnique = await verifierEtGenererNumeroUnique();
+      setNumeroCompte(numeroUnique);
+    };
+    initialiser();
+  }, []);
 
   useEffect(() => {
     api
@@ -98,8 +111,8 @@ const Compte = () => {
       solde: 0,
       numCompte: "",
       type: "",
-      decouverte: 0,
-      taux: 0,
+      decouverte: "",
+      taux: "",
     });
   };
 
@@ -122,9 +135,40 @@ const Compte = () => {
     loadUserData();
   }, [userData]);
 
+  const openModal = () => {
+    if (userData.length === 0) {
+      swal(
+        "Aucun client disponible",
+        "Aucun client n’a été récemment enregistré pour l’association d’un compte.",
+        {
+          icon: "warning",
+          buttons: {
+            confirm: {
+              text: "OK",
+              className: "btn btn-warning",
+            },
+          },
+        }
+      );
+      return;
+    }
+
+    setIsActive(true);
+  };
+
+  // useEffect(() => {
+  //   compte.numCompte = genererNumeroCompte();
+  //   compte.idClient = userData.IdUt;
+  // }, [numeroCompte, userData]);
+
   useEffect(() => {
-    compte.numCompte = genererNumeroCompte();
-    compte.idClient = userData.IdUt;
+    if (numeroCompte && userData?.IdUt) {
+      setcompte((prev) => ({
+        ...prev,
+        numCompte: numeroCompte.replace(/ /g, ""), // En version sans espaces
+        idClient: userData.IdUt,
+      }));
+    }
   }, [numeroCompte, userData]);
 
   const handleChange = (e) => {
@@ -132,20 +176,38 @@ const Compte = () => {
     setcompte({ ...compte, [name]: value });
   };
 
+  useEffect(() => {
+    if (compte.type === "Epargne") {
+      compte.decouverte = 0;
+      compte.taux = 0.15;
+    } else if (compte.type === "Courant") {
+      compte.decouverte = 3000;
+      compte.taux = 0;
+    } else {
+      (compte.decouverte = 0), (compte.taux = 0);
+    }
+  }, [compte]);
+
   const saveCompte = () => {
-    // console.log(compte);
+    const dataToSend = {
+      ...compte,
+      numCompte: compte.numCompte.replace(/\s/g, ""),
+    };
     api
-      .post("/operations/compte", compte)
+      .post("/operations/compte", dataToSend)
       .then((rep) => {
         if (rep.data.success) {
-          swal(`${rep.data.message}`, {
-            icon: "success",
-            buttons: {
-              confirm: {
-                className: "btn btn-success",
+          swal(
+            `${rep.data.message} \n\n Votre code PIN est ${rep.data.codePin}`,
+            {
+              icon: "success",
+              buttons: {
+                confirm: {
+                  className: "btn btn-success",
+                },
               },
-            },
-          });
+            }
+          );
         } else {
           swal(`${rep.data.message}`, {
             icon: "error",
@@ -245,214 +307,282 @@ const Compte = () => {
     });
   };
 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredClients = compteData.filter((compte) =>
+    (
+      compte.NumCompte +
+      " " +
+      compte.DateOuverture +
+      " " +
+      compte.Solde +
+      " " +
+      compte.Discriminatorr +
+      " " +
+      compte.Decouvert +
+      " " +
+      compte.Taux
+    )
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="container-data">
-      <h2 style={{ textAlign: "start" }}>Liste des comptes ouvertes</h2>
+      <h2 style={{ textAlign: "start" }}>Liste des comptes ouverts</h2>
 
       {isActive && (
-        <div className="modal">
-          <form className="">
-            <h2>Enregistrement d'un nouveau compte bancaire</h2>
-            <div className="form-group">
-              <label htmlFor="numCompte">Numéro de compte</label>
-              <input
-                type="text"
-                name="numCompte"
-                disabled
-                id="numCompte"
-                value={numeroCompte}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group" style={{ paddingBottom: "25px" }}>
-              <label htmlFor="numCompte">Type de compte</label>
-              <select
-                name="type"
-                style={{ width: "100%", padding: "10px" }}
-                id=""
-                value={compte.type}
-                onChange={handleChange}
+        <div className="modal-overlay">
+          <div className="modal">
+            <form className="">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
               >
-                <option value="" disabled>
-                  Chosir le type de compte
-                </option>
-                <option value="Courant">Courant</option>
-                <option value="Epargne">Epargne</option>
-              </select>
-            </div>
-            <div className="form-group" style={{ paddingBottom: "25px" }}>
-              <label htmlFor="numCompte">Nom et prenom du client</label>
-              <select
-                name="idClient"
-                style={{ width: "100%", padding: "10px" }}
-                id=""
-                value={compte.idClient}
-                onChange={handleChange}
-              >
-                <option value={userData.IdUt}>
-                  {userData.Nom + " " + userData.Prenom}
-                </option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Solde du compte</label>
-              <input
-                type="number"
-                name="solde"
-                id="solde"
-                value={compte.solde}
-                onChange={handleChange}
-                min={0}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Montant du decouverte</label>
-              <input
-                type="number"
-                name="decouverte"
-                id="decouverte"
-                value={compte.decouverte}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group" style={{ paddingBottom: "25px" }}>
-              <label htmlFor="numCompte">Taux</label>
-              <select
-                name="taux"
-                style={{ width: "100%", padding: "10px" }}
-                id="taux"
-                value={compte.taux}
-                onChange={handleChange}
-              >
-                <option selected defaultValue={""}>
-                  Choisir
-                </option>
-                <option value="0.05">5%</option>
-                <option value="0.10">10%</option>
-                <option value="0.15">15%</option>
-                <option value="0.20">20%</option>
-              </select>
-            </div>
-            <div className="btn-save">
-              <button onClick={saveCompte} type="button">
-                Enregistrer
-              </button>
-            </div>
-          </form>
+                <h2>Nouveau compte bancaire</h2>
+                <FontAwesomeIcon
+                  onClick={() => setIsActive(false)}
+                  size="2x"
+                  style={{ color: "red" }}
+                  icon={faTimes}
+                />
+              </div>
+              <br />
+              <div className="form-group">
+                <label htmlFor="numCompte">Numéro de compte</label>
+                <input
+                  type="text"
+                  name="numCompte"
+                  disabled
+                  id="numCompte"
+                  value={numeroCompte}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="form-group" style={{ paddingBottom: "25px" }}>
+                <label htmlFor="numCompte">Type de compte</label>
+                <select
+                  name="type"
+                  style={{ width: "100%", padding: "10px" }}
+                  id=""
+                  value={compte.type}
+                  onChange={handleChange}
+                >
+                  <option value="" disabled>
+                    Chosir le type de compte
+                  </option>
+                  <option value="Courant">Courant</option>
+                  <option value="Epargne">Epargne</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ paddingBottom: "25px" }}>
+                <label htmlFor="numCompte">Nom et prenom du client</label>
+                <select
+                  name="idClient"
+                  style={{ width: "100%", padding: "10px" }}
+                  onChange={handleChange}
+                >
+                  {userData && (
+                    <option value={userData.IdUt}>
+                      {userData.Nom + " " + userData.Prenom}
+                    </option>
+                  )}
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Solde du compte</label>
+                <input
+                  type="number"
+                  name="solde"
+                  id="solde"
+                  value={compte.solde}
+                  onChange={handleChange}
+                  min={0}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Montant du decouverte</label>
+                <input
+                  type="text"
+                  name="decouverte"
+                  disabled
+                  id="decouverte"
+                  value={compte.decouverte}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Taux</label>
+                <input
+                  type="text"
+                  name="taux"
+                  disabled
+                  id="taux"
+                  value={compte.taux}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="btn-save">
+                <button onClick={saveCompte} type="button">
+                  Enregistrer
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
       {isEditActive && (
-        <div className="modal">
-          <form className="">
-            <h2>Modification</h2>
-            <div className="form-group">
-              <label htmlFor="numCompte">Numéro de compte</label>
-              <input
-                type="text"
-                name="numCompte"
-                disabled
-                id="numCompte"
-                value={compte.numCompte}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group" style={{ paddingBottom: "25px" }}>
-              <label htmlFor="numCompte">Type de compte</label>
-              <select
-                disabled
-                name="type"
-                style={{ width: "100%", padding: "10px" }}
-                id=""
-                value={compte.type}
-                onChange={handleChange}
+        <div className="modal-overlay">
+          <div className="modal">
+            <form className="">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
               >
-                <option value="" disabled>
-                  Chosir le type de compte
-                </option>
-                <option value="Courant">Courant</option>
-                <option value="Epargne">Epargne</option>
-              </select>
-            </div>
-            <div className="form-group" style={{ paddingBottom: "25px" }}>
-              <label htmlFor="numCompte">Nom et prenom du client</label>
-              <select
-                name="idClient"
-                style={{ width: "100%", padding: "10px" }}
-                id=""
-                value={compte.idClient}
-                onChange={handleChange}
-              >
-                <option value={userData.IdUt}>
-                  {userData.Nom + " " + userData.Prenom}
-                </option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Solde du compte</label>
-              <input
-                type="number"
-                name="solde"
-                id="solde"
-                value={compte.solde}
-                onChange={handleChange}
-                min={0}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="numCompte">Montant du decouverte</label>
-              {compte.type == "Epargne" ? (
+                <h2>Modification</h2>
+                <FontAwesomeIcon
+                  onClick={() => setIsEditActive(false)}
+                  size="2x"
+                  style={{ color: "red" }}
+                  icon={faTimes}
+                />
+              </div>
+              <br />
+              <div className="form-group">
+                <label htmlFor="numCompte">Numéro de compte</label>
                 <input
-                  type="number"
-                  name="decouverte"
-                  id="decouverte"
+                  type="text"
+                  name="numCompte"
                   disabled
-                  value={compte.decouverte}
+                  id="numCompte"
+                  value={compte.numCompte}
                   onChange={handleChange}
                 />
-              ) : (
+              </div>
+              <div className="form-group" style={{ paddingBottom: "25px" }}>
+                <label htmlFor="numCompte">Type de compte</label>
+                <select
+                  disabled
+                  name="type"
+                  style={{ width: "100%", padding: "10px" }}
+                  id=""
+                  value={compte.type}
+                  onChange={handleChange}
+                >
+                  <option value="" disabled>
+                    Chosir le type de compte
+                  </option>
+                  <option value="Courant">Courant</option>
+                  <option value="Epargne">Epargne</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ paddingBottom: "25px" }}>
+                <label htmlFor="numCompte">Nom et prenom du client</label>
+                <select
+                  name="idClient"
+                  style={{ width: "100%", padding: "10px" }}
+                  id=""
+                  value={compte.idClient}
+                  onChange={handleChange}
+                >
+                  <option value={userData.IdUt}>
+                    {userData.Nom + " " + userData.Prenom}
+                  </option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Solde du compte</label>
                 <input
                   type="number"
-                  name="decouverte"
-                  id="decouverte"
-                  value={compte.decouverte}
+                  name="solde"
+                  id="solde"
+                  value={compte.solde}
                   onChange={handleChange}
+                  min={0}
                 />
-              )}
-            </div>
-            <div className="form-group" style={{ paddingBottom: "25px" }}>
-              <label htmlFor="numCompte">Taux</label>
-              <select
-                name="taux"
-                style={{ width: "100%", padding: "10px" }}
-                id="taux"
-                value={compte.taux}
-                onChange={handleChange}
-              >
-                <option defaultValue={""}>Choisir</option>
-                <option value="0.05">5%</option>
-                <option value="0.10">10%</option>
-                <option value="0.15">15%</option>
-                <option value="0.20">20%</option>
-              </select>
-            </div>
-            <div className="btn-save">
-              <button onClick={updateCompte} type="button">
-                Mettre a jour
-              </button>
-            </div>
-          </form>
+              </div>
+              <div className="form-group">
+                <label htmlFor="numCompte">Montant du decouverte</label>
+                {compte.type == "Epargne" ? (
+                  <input
+                    type="number"
+                    name="decouverte"
+                    id="decouverte"
+                    disabled
+                    value={compte.decouverte}
+                    onChange={handleChange}
+                  />
+                ) : (
+                  <input
+                    type="number"
+                    name="decouverte"
+                    id="decouverte"
+                    value={compte.decouverte}
+                    onChange={handleChange}
+                  />
+                )}
+              </div>
+              <div className="form-group" style={{ paddingBottom: "25px" }}>
+                <label htmlFor="numCompte">Taux</label>
+                <select
+                  name="taux"
+                  disabled
+                  style={{ width: "100%", padding: "10px" }}
+                  id="taux"
+                  value={compte.taux}
+                  onChange={handleChange}
+                >
+                  <option value="0.15">15%</option>
+                </select>
+              </div>
+              <div className="btn-save">
+                <button onClick={updateCompte} type="button">
+                  Mettre a jour
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
       <div className="transaction-history">
         <div className="history-toolbar">
           <div styles={{ width: "100px" }}>
-            <div className="action">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "730px",
+              }}
+            >
               <button onClick={openModal}>
                 {" "}
-                <FontAwesomeIcon icon={faPlus} /> &nbsp;&nbsp;Nouveau compte
+                <FontAwesomeIcon icon={faPlus} />
+                &nbsp;&nbsp; Ajouter client
               </button>
+
+              <div style={{ paddingTop: "10px" }}>
+                <input
+                  style={{
+                    padding: "12px",
+                    width: "100%",
+                    marginBottom: "10px",
+                  }}
+                  type="text"
+                  placeholder="Recherche"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
             {/* <Select
               styles={{
@@ -493,8 +623,8 @@ const Compte = () => {
             </tr>
           </thead>
           <tbody>
-            {compteData && compteData.length > 0 ? (
-              compteData.map((item) => (
+            {filteredClients && filteredClients.length > 0 ? (
+              filteredClients.map((item) => (
                 <tr
                   data-tooltip-content={`Client : ${
                     item.Client.Nom +
@@ -508,7 +638,7 @@ const Compte = () => {
                   key={item.NumCompte}
                 >
                   <td>{item.DateOuverture}</td>
-                  <td>{item.NumCompte}</td>
+                  <td>{item.NumCompte.replace(/(.{4})/g, "$1 ").trim()}</td>
                   <td>
                     {item.Solde.toLocaleString("fr-FR", {
                       minimumFractionDigits: 2,
@@ -519,7 +649,12 @@ const Compte = () => {
 
                   <td>{item.Discriminator}</td>
                   <td>
-                    {item.Discriminator == "Epargne" ? "Null" : item.Decouvert}
+                    {item.Discriminator == "Epargne"
+                      ? "Null"
+                      : item.Decouvert.toLocaleString("fr-FR", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                   </td>
                   <td>{item.Taux}</td>
                   <td>{item.StatusCompte}</td>
@@ -530,7 +665,14 @@ const Compte = () => {
                       // textAlign: "center",
                     }}
                   >
+                    {/* <FontAwesomeIcon
+                      style={{ color: "black" }}
+                      // onClick={() => openEditModal(item)}
+                      icon={faEye}
+                    /> */}
+                    &nbsp;&nbsp;&nbsp;
                     <FontAwesomeIcon
+                      style={{ color: "black" }}
                       onClick={() => openEditModal(item)}
                       icon={faEdit}
                     />
@@ -543,7 +685,18 @@ const Compte = () => {
                 </tr>
               ))
             ) : (
-              <tr></tr>
+              <tr>
+                <td
+                  colSpan={8}
+                  style={{
+                    textAlign: "center",
+                    fontStyle: "italic",
+                    padding: "20px",
+                  }}
+                >
+                  Aucune donnée trouvée.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

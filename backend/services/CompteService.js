@@ -20,6 +20,11 @@ class CompteService {
     });
   }
 
+  static async findByNumCompte(numCompte) {
+    const compte = await Compte.findOne({ where: { NumCompte: numCompte } });
+    return compte;
+  }
+
   static async getCompteById(numCompte) {
     return Compte.findOne({
       where: { numCompte },

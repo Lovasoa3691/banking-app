@@ -118,11 +118,12 @@ exports.doVirement = async (req, res) => {
       DateOp: formattedDate,
       Discriminator: "Virement",
     };
-    const newVirement = await OperationService.doSend(data);
+
     await OperationService.checkPin(numCompte, codePin);
 
     await OperationService.checkSolde(numCompte, montant);
 
+    const newVirement = await OperationService.doSend(data);
     await OperationService.updateSolde(numCompte, montant);
 
     return res.status(201).json({
@@ -139,7 +140,7 @@ exports.doVirement = async (req, res) => {
 };
 
 exports.doPret = async (req, res) => {
-  const { numCompte, duree, revenu, montant, motif } = req.body;
+  const { numCompte, duree, revenu, montant, motif, codePin } = req.body;
   try {
     const date = new Date();
     const formattedDate = date.toISOString().split("T")[0];
@@ -155,10 +156,20 @@ exports.doPret = async (req, res) => {
       DateOp: formattedDate,
       Discriminator: "Pret",
     };
+
+    await OperationService.checkPin(numCompte, codePin);
+
     const newPret = await OperationService.doExchange(data);
-    res.status(201).json(newPret);
+    res.status(201).json({
+      success: true,
+      message: "Prêt envoié avec succès",
+      pret: newPret,
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -184,22 +195,31 @@ exports.updateStatus = async (req, res) => {
     if (updated[0] > 0) {
       const operation = await OperationService.findOneOperation(id);
 
-      if (
-        operation &&
-        operation.compte &&
-        operation.compte.client &&
-        operation.compte.client.connexion
-      ) {
-        const user = operation.compte.client;
-        const email = user.connexion.Email;
+      console.log(JSON.stringify(operation, null, 2));
 
-        if (status === "Accorder" || status === "Accepter") {
-          await MailService.sendPretConfirmation(
-            email,
-            user.Nom,
-            operation.Montant,
-            status
-          );
+      if (operation?.Operations?.Client?.Utilisateur) {
+        const email = operation.Operations.Client.Utilisateur.Email;
+        const nom = operation.Operations.Client.Nom;
+
+        if (status === "Accepte") {
+          try {
+            await MailService.sendPretConfirmation(
+              email,
+              nom,
+              operation.Montant,
+              status
+            );
+            // return res.json({
+            //   success: true,
+            //   message: "Mail envoyé avec succès.",
+            // });
+          } catch (err) {
+            return res.status(500).json({
+              success: false,
+              message: "Status mis à jour, mais l'envoi de l'email a échoué.",
+              error: err.message,
+            });
+          }
         }
       }
 

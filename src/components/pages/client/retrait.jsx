@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import api from "../../api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import html2pdf from "html2pdf.js";
 import Recu from "./recu";
 import { createRoot } from "react-dom/client";
@@ -78,8 +78,12 @@ const Retrait = () => {
   };
 
   const doRetrait = () => {
+    const dataToSend = {
+      ...retrait,
+      destinataire: retrait.destinataire.replace(/\s/g, ""),
+    };
     api
-      .post("/operations/retrait", retrait)
+      .post("/operations/retrait", dataToSend)
       .then((rep) => {
         if (!rep.data.success) {
           swal({
@@ -274,9 +278,14 @@ const Retrait = () => {
           disabled
           type="text"
           name="numCompte"
-          value={clientInfo.NumCompte}
+          value={
+            clientInfo.NumCompte
+              ? clientInfo.NumCompte.replace(/(.{4})/g, "$1 ").trim()
+              : ""
+          }
           placeholder="Numéro de compte"
         />
+
         <input
           type="text"
           name="destinataire"
@@ -336,11 +345,14 @@ const Retrait = () => {
           </div>
         </div>
 
-        <div className="transaction-list">
+        {/* <div className="transaction-list">
           {retraitData && retraitData.length > 0 ? (
             retraitData.map((item) => (
               <div key={item.NumOp} className="transaction-row">
                 <div className="transaction-date">{item.DateOp}</div>
+                <div className="transaction-date">
+                  {item.NumDest.replace(/(.{4})/g, "$1 ").trim()}
+                </div>
                 <div className="transaction-amount">
                   {item.Montant.toLocaleString("fr-FR", {
                     minimumFractionDigits: 2,
@@ -351,7 +363,7 @@ const Retrait = () => {
                 <div className="transaction-action">
                   <FontAwesomeIcon
                     onClick={() => deleteHistorique(item.NumOp)}
-                    icon={faTrash}
+                    icon={faTimes}
                   />
                 </div>
               </div>
@@ -359,20 +371,63 @@ const Retrait = () => {
           ) : (
             <div className="no-transaction">Aucune transaction disponible.</div>
           )}
-        </div>
+        </div> */}
+
+        <table className="custom-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Destinataire</th>
+              <th>Montant</th>
+              <th>Statut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {retraitData && retraitData.length > 0 ? (
+              retraitData.map((item) => (
+                <tr key={item.NumOp}>
+                  <td>{item.DateOp}</td>
+                  <td>{item.NumDest.replace(/(.{4})/g, "$1 ").trim()}</td>
+                  <td>
+                    {item.Montant.toLocaleString("fr-FR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    Ar
+                  </td>
+                  <td>{item.StatusP}</td>
+                  <td
+                    style={{
+                      color: "red",
+                      fontSize: "20px",
+                      textAlign: "center",
+                    }}
+                  >
+                    <FontAwesomeIcon
+                      onClick={() => deleteHistorique(item.NumOp)}
+                      icon={faTimes}
+                    />
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={8}
+                  style={{
+                    textAlign: "center",
+                    fontStyle: "italic",
+                    padding: "20px",
+                  }}
+                >
+                  Aucune donnée trouvée.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
-
-      {/* <div ref={receiptRef} style={{ display: "none", padding: "30px" }}>
-        <h2 style={{ textAlign: "center" }}>Reçu de Retrait</h2>
-
-        <p>Numéro de Compte : {retraitData.numCompte}</p>
-        <p>Montant Retiré : {retraitData.montant} FCFA</p>
-        <p>Motif : {retraitData.motif}</p>
-        <p>Date : {retraitData.date}</p>
-        <p>Opérateur : {retraitData.nomOperateur}</p>
-        <hr />
-        <p>Merci d’avoir utilisé notre service.</p>
-      </div> */}
     </div>
   );
 };

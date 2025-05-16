@@ -1,7 +1,7 @@
 import { use, useEffect, useState } from "react";
 import api from "../../api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { createRoot } from "react-dom/client";
 import Recu from "./recu";
 import html2pdf from "html2pdf.js";
@@ -78,8 +78,12 @@ const Virement = () => {
   };
 
   const doVirement = () => {
+    const dataToSend = {
+      ...virement,
+      destinataire: virement.destinataire.replace(/\s/g, ""),
+    };
     api
-      .post("/operations/virement", virement)
+      .post("/operations/virement", dataToSend)
       .then((rep) => {
         if (!rep.data.success) {
           swal({
@@ -263,12 +267,16 @@ const Virement = () => {
       <form className="withdraw-form">
         <h2>Formulaire de Virement</h2>
         <input
-          type="text"
           style={{ backgroundColor: "#fffcc8" }}
           disabled
+          type="text"
           name="numCompte"
-          value={clientInfo.NumCompte}
-          placeholder="Numero de compte expediteur"
+          value={
+            clientInfo.NumCompte
+              ? clientInfo.NumCompte.replace(/(.{4})/g, "$1 ").trim()
+              : ""
+          }
+          placeholder="Numéro de compte"
         />
         <input
           type="text"
@@ -325,11 +333,13 @@ const Virement = () => {
           </div>
         </div>
 
-        <div className="transaction-list">
+        {/* <div className="transaction-list">
           {virementtData && virementtData.length > 0 ? (
             virementtData.map((item) => (
               <div key={item.NumOp} className="transaction-row">
-                <div className="transaction-date">{item.NumDest}</div>
+                <div className="transaction-date">
+                  {item.NumDest.replace(/(.{4})/g, "$1 ").trim()}
+                </div>
                 <div className="transaction-date">{item.DateOp}</div>
                 <div className="transaction-amount">
                   {item.Montant.toLocaleString("fr-FR", {
@@ -338,7 +348,7 @@ const Virement = () => {
                   })}{" "}
                   Ar
                 </div>
-                <div className="transaction-date">Reucus</div>
+                <div className="transaction-date">{item.StatusP}</div>
                 <div className="transaction-action">
                   <FontAwesomeIcon
                     onClick={() => deleteHistorique(item.NumOp)}
@@ -350,7 +360,62 @@ const Virement = () => {
           ) : (
             <div className="no-transaction">Aucune transaction disponible.</div>
           )}
-        </div>
+        </div> */}
+
+        <table className="custom-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Destinataire</th>
+              <th>Montant</th>
+              <th>Statut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {virementtData && virementtData.length > 0 ? (
+              virementtData.map((item) => (
+                <tr key={item.NumOp}>
+                  <td>{item.DateOp}</td>
+                  <td>{item.NumDest.replace(/(.{4})/g, "$1 ").trim()}</td>
+                  <td>
+                    {item.Montant.toLocaleString("fr-FR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    Ar
+                  </td>
+                  <td>{item.StatusP}</td>
+                  <td
+                    style={{
+                      color: "red",
+                      fontSize: "20px",
+                      textAlign: "center",
+                    }}
+                  >
+                    <FontAwesomeIcon
+                      onClick={() => deleteHistorique(item.NumOp)}
+                      icon={faTimes}
+                    />
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={8}
+                  style={{
+                    textAlign: "center",
+                    fontStyle: "italic",
+                    padding: "20px",
+                  }}
+                >
+                  Aucune donnée trouvée.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

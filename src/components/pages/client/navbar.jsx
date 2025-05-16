@@ -118,12 +118,12 @@ const Navbar = () => {
 
       <div className="main">
         <div className="top-bar">
-          <div className="item">
-            <div>
+          <div className="item-box">
+            {/* <div>
               <input type="text" placeholder="Recherche" />
-            </div>
+            </div> */}
 
-            <div>
+            <div style={{ float: "right", paddingTop: "15px" }}>
               {/* <img src={userLogo} width={50} height={50} alt="" /> &nbsp;&nbsp; */}
               <span>{user.email}</span>
             </div>

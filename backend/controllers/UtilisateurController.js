@@ -59,6 +59,14 @@ exports.create = async (req, res) => {
 
 exports.createClient = async (req, res) => {
   const { nom, prenom, adresse, telephone, cin, profession } = req.body;
+
+  if (!nom || !prenom || !adresse || !telephone || !cin || !profession) {
+    return res.status(400).json({
+      success: false,
+      message: "Veuillez remplir tous les champs.",
+    });
+  }
+
   try {
     const data = {
       IdUt: null,
@@ -101,6 +109,14 @@ exports.deleteClient = async (req, res) => {
 exports.updateClient = async (req, res) => {
   const { id } = req.params;
   const { nom, prenom, adresse, telephone, cin, profession } = req.body;
+
+  if (!nom || !prenom || !adresse || !telephone || !cin || !profession) {
+    return res.status(400).json({
+      success: false,
+      message: "Veuillez remplir tous les champs.",
+    });
+  }
+
   try {
     const updatedClient = await UtilisateurService.updateClient(id, {
       Nom: nom,
