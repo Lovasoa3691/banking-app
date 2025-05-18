@@ -1,4 +1,4 @@
-.modal{
+/* .modal{
     width: 520px;
     background-color: white;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -10,19 +10,43 @@
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1000;
+} */
+
+.modal {
+  width: 90%;
+  max-width: 520px;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: start;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+.modal form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
 .modal h2{
     margin-bottom: 20px;
 }
 
-.modal form input{
+/* .modal form input{
     width: 500px;
     padding: 10px;
     margin-bottom: 20px;
     border-radius: 5px;
     border: 1px solid #ccc;
-}
+} */
 
 .modal-overlay {
   position: fixed;
@@ -35,4 +59,19 @@
   align-items: center;
   justify-content: center;
   z-index: 999; 
+}
+
+@media (min-width: 600px) {
+  .modal {
+    width: 80%;
+    padding: 30px;
+  }
+}
+
+/* Pour desktops */
+@media (min-width: 992px) {
+  .modal {
+    width: 520px;
+    padding: 40px;
+  }
 }

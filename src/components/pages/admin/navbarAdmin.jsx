@@ -50,9 +50,11 @@ const Navbar = () => {
       });
   }, []);
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className="navbar">
-      <div className="sideBar">
+      <div className={`sideBar ${sidebarOpen ? "open" : ""}`}>
         <div className="col">
           <img src={logo} width={50} height={50} alt="" /> &nbsp;&nbsp;
           <span style={{ fontSize: "40px" }}>F-BANKY</span>
@@ -132,15 +134,16 @@ const Navbar = () => {
 
       <div className="main">
         <div className="top-bar">
-          <div className="item-box">
-            {/* <div>
-              <input type="text" placeholder="Recherche" />
-            </div> */}
+          <button
+            className="hamburger-btn"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle menu"
+          >
+            &#9776;
+          </button>
 
-            <div style={{ float: "right", paddingTop: "15px" }}>
-              {/* <img src={userLogo} width={50} height={50} alt="" /> &nbsp;&nbsp; */}
-              <span>{user.email}</span>
-            </div>
+          <div style={{ float: "right", paddingTop: "10px" }}>
+            <span>{user.email}</span>
           </div>
         </div>
 

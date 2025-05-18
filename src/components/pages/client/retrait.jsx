@@ -5,8 +5,40 @@ import { faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import html2pdf from "html2pdf.js";
 import Recu from "./recu";
 import { createRoot } from "react-dom/client";
+import DataTable from "react-data-table-component";
 
 const Retrait = () => {
+  const customStyles = {
+    rows: {
+      style: {
+        minHeight: "60px",
+        fontSize: "15px",
+        borderBottom: "1px solid #eee",
+      },
+    },
+    headCells: {
+      style: {
+        backgroundColor: "#009879",
+        color: "white",
+        fontSize: "15px",
+        fontWeight: "600",
+        textTransform: "uppercase",
+      },
+    },
+    cells: {
+      style: {
+        padding: "12px",
+      },
+    },
+    pagination: {
+      style: {
+        borderTop: "1px solid #eee",
+        padding: "10px",
+        fontSize: "15px",
+        // justifyContent: "center",
+      },
+    },
+  };
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
 
@@ -22,6 +54,66 @@ const Retrait = () => {
     date: "",
     titulaire: "",
   });
+
+  const columns = [
+    {
+      name: "Date",
+      selector: (row) => formatDate(row.DateOp),
+      sortable: true,
+    },
+    {
+      name: "Destinataire",
+      selector: (row) => row.NumDest.replace(/(.{4})/g, "$1 ").trim(),
+      sortable: true,
+    },
+    {
+      name: "Montant",
+      selector: (row) =>
+        `${row.Montant.toLocaleString("fr-FR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })} Ar`,
+      sortable: true,
+      // right: true,
+    },
+    {
+      name: "Statut",
+      selector: (row) => (
+        <div
+          style={{
+            padding: "5px",
+            width: "70px",
+            backgroundColor: "green",
+            borderRadius: "5px",
+            color: "white",
+          }}
+        >
+          {row.StatusP}
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Action",
+      cell: (row) => (
+        <FontAwesomeIcon
+          icon={faTimes}
+          style={{ color: "red", fontSize: "20px", cursor: "pointer" }}
+          onClick={() => deleteHistorique(row.NumOp)}
+        />
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+  ];
+
+  const paginationData = {
+    rowsPerPageText: "Lignes par page",
+    rangeSeparatorText: "sur",
+    selectAllRowsItem: true,
+    selectAllRowsItemText: "Tous",
+  };
 
   useEffect(() => {
     api
@@ -262,6 +354,10 @@ const Retrait = () => {
     }, 1000);
   };
 
+  const formatDate = (date) => {
+    return date.split("T")[0];
+  };
+
   return (
     <div className="container-data">
       <form className="withdraw-form">
@@ -338,95 +434,82 @@ const Retrait = () => {
       <div className="transaction-history">
         <div className="history-toolbar">
           <h2>Historiques de transactions</h2>
-          <div className="actions">
+          {/* <div className="actions">
             <button>📄 Exporter en PDF</button>
             <button>📊 Exporter en Excel</button>
             <button>🖨️ Imprimer</button>
-          </div>
+          </div> */}
         </div>
 
-        {/* <div className="transaction-list">
-          {retraitData && retraitData.length > 0 ? (
-            retraitData.map((item) => (
-              <div key={item.NumOp} className="transaction-row">
-                <div className="transaction-date">{item.DateOp}</div>
-                <div className="transaction-date">
-                  {item.NumDest.replace(/(.{4})/g, "$1 ").trim()}
-                </div>
-                <div className="transaction-amount">
-                  {item.Montant.toLocaleString("fr-FR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}{" "}
-                  Ar
-                </div>
-                <div className="transaction-action">
-                  <FontAwesomeIcon
-                    onClick={() => deleteHistorique(item.NumOp)}
-                    icon={faTimes}
-                  />
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="no-transaction">Aucune transaction disponible.</div>
-          )}
-        </div> */}
-
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Destinataire</th>
-              <th>Montant</th>
-              <th>Statut</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {retraitData && retraitData.length > 0 ? (
-              retraitData.map((item) => (
-                <tr key={item.NumOp}>
-                  <td>{item.DateOp}</td>
-                  <td>{item.NumDest.replace(/(.{4})/g, "$1 ").trim()}</td>
-                  <td>
-                    {item.Montant.toLocaleString("fr-FR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}{" "}
-                    Ar
-                  </td>
-                  <td>{item.StatusP}</td>
+        {/* <div className="table-data">
+          <table className="custom-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Destinataire</th>
+                <th>Montant</th>
+                <th>Statut</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {retraitData && retraitData.length > 0 ? (
+                retraitData.map((item) => (
+                  <tr key={item.NumOp}>
+                    <td>{formatDate(item.DateOp)}</td>
+                    <td>{item.NumDest.replace(/(.{4})/g, "$1 ").trim()}</td>
+                    <td>
+                      {item.Montant.toLocaleString("fr-FR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}{" "}
+                      Ar
+                    </td>
+                    <td>{item.StatusP}</td>
+                    <td
+                      style={{
+                        color: "red",
+                        fontSize: "20px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <FontAwesomeIcon
+                        onClick={() => deleteHistorique(item.NumOp)}
+                        icon={faTimes}
+                      />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
                   <td
+                    colSpan={8}
                     style={{
-                      color: "red",
-                      fontSize: "20px",
                       textAlign: "center",
+                      fontStyle: "italic",
+                      padding: "20px",
                     }}
                   >
-                    <FontAwesomeIcon
-                      onClick={() => deleteHistorique(item.NumOp)}
-                      icon={faTimes}
-                    />
+                    Aucune donnée trouvée.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={8}
-                  style={{
-                    textAlign: "center",
-                    fontStyle: "italic",
-                    padding: "20px",
-                  }}
-                >
-                  Aucune donnée trouvée.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div> */}
+
+        <div style={{ maxWidth: "100%", overflowX: "auto" }}>
+          <DataTable
+            columns={columns}
+            data={retraitData}
+            pagination
+            responsive
+            highlightOnHover
+            customStyles={customStyles}
+            noDataComponent="Aucune donnée trouvée."
+            paginationComponentOptions={paginationData}
+          />
+        </div>
       </div>
     </div>
   );

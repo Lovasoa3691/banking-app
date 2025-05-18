@@ -48,57 +48,68 @@ const Login = () => {
   };
 
   return (
-    <div className="container">
-      <img src={logo} width={100} height={100} alt="" /> <br />
-      <h2 style={{ fontSize: "30px" }}>Bienvenue</h2>
-      <span className="text-bold">Connectez-vous s'il vous plait</span>
-      <br />
-      <br />
-      <form action="">
-        <div className="row">
-          <label htmlFor="login">Adresse email</label>
-
-          <input
-            type="email"
-            value={mail}
-            onChange={(e) => setMail(e.target.value)}
-            placeholder="@gmail.com"
-          />
-        </div>
-
-        <div className="row">
-          <label htmlFor="password">Mot de passe</label>
-
-          <input
-            type="password"
-            value={mdp}
-            onChange={(e) => setMdp(e.target.value)}
-            placeholder="***********"
-          />
-        </div>
-
-        <span className="text-primary text-bold">Mot de passe oublie?</span>
+    <div className="wrapper">
+      <div className="container">
+        <img src={logo} width={80} height={80} alt="" />
+        <h2 style={{ fontSize: "30px" }}>Bienvenue</h2>
+        <span className="text-bold">Connectez-vous s'il vous plait</span>
         <br />
         <br />
-        <br />
+        <form action="">
+          <div className="row">
+            <label htmlFor="login">Adresse email</label>
 
-        <div className="row">
-          <button type="button" onClick={login}>
-            Connecter
-          </button>
-        </div>
+            <input
+              type="email"
+              value={mail}
+              onChange={(e) => setMail(e.target.value)}
+              placeholder="@gmail.com"
+            />
+          </div>
 
-        <br />
-        <br />
+          <div className="row">
+            <label htmlFor="password">Mot de passe</label>
 
-        <span>
-          Pas encore un compte?{" "}
-          <Link to="/register" className="text-bold">
-            {" "}
-            Inscrire
-          </Link>
-        </span>
-      </form>
+            <input
+              type="password"
+              value={mdp}
+              onChange={(e) => setMdp(e.target.value)}
+              placeholder="******"
+            />
+          </div>
+
+          {/* <span className="text-primary text-bold">Mot de passe oublie?</span> */}
+          <br />
+
+          <div className="row">
+            <button type="button" onClick={login}>
+              Connecter
+            </button>
+          </div>
+
+          <br />
+
+          <span>
+            Pas encore un compte?{" "}
+            <Link to="/register" className="text-bold">
+              {" "}
+              Inscrire
+            </Link>
+          </span>
+          <br />
+          <br />
+          <span>
+            <Link
+              to="/"
+              className="text-bold"
+              style={{ color: "blue", textDecoration: "underline" }}
+            >
+              {" "}
+              Retour a la page d'accueil
+            </Link>
+          </span>
+        </form>
+      </div>
     </div>
   );
 };

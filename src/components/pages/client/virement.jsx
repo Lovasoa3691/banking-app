@@ -5,8 +5,41 @@ import { faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { createRoot } from "react-dom/client";
 import Recu from "./recu";
 import html2pdf from "html2pdf.js";
+import DataTable from "react-data-table-component";
 
 const Virement = () => {
+  const customStyles = {
+    rows: {
+      style: {
+        minHeight: "60px",
+        fontSize: "15px",
+        borderBottom: "1px solid #eee",
+      },
+    },
+    headCells: {
+      style: {
+        backgroundColor: "#009879",
+        color: "white",
+        fontSize: "15px",
+        fontWeight: "600",
+        textTransform: "uppercase",
+      },
+    },
+    cells: {
+      style: {
+        padding: "12px",
+      },
+    },
+    pagination: {
+      style: {
+        borderTop: "1px solid #eee",
+        padding: "10px",
+        fontSize: "15px",
+        // justifyContent: "center",
+      },
+    },
+  };
+
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
   const [virement, setVirement] = useState({
@@ -22,6 +55,66 @@ const Virement = () => {
 
   const [numCompte, setNumCompte] = useState("");
   const [virementtData, setVirementData] = useState([]);
+
+  const columns = [
+    {
+      name: "Date",
+      selector: (row) => formatDate(row.DateOp),
+      sortable: true,
+    },
+    {
+      name: "Destinataire",
+      selector: (row) => row.NumDest.replace(/(.{4})/g, "$1 ").trim(),
+      sortable: true,
+    },
+    {
+      name: "Montant",
+      selector: (row) =>
+        `${row.Montant.toLocaleString("fr-FR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })} Ar`,
+      sortable: true,
+      // right: true,
+    },
+    {
+      name: "Status",
+      selector: (row) => (
+        <div
+        // style={{
+        //   padding: "5px",
+        //   width: "70px",
+        //   backgroundColor: "green",
+        //   borderRadius: "5px",
+        //   color: "white",
+        // }}
+        >
+          {row.StatusP}
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Actions",
+      cell: (row) => (
+        <FontAwesomeIcon
+          icon={faTimes}
+          style={{ color: "red", fontSize: "20px", cursor: "pointer" }}
+          onClick={() => deleteHistorique(row.NumOp)}
+        />
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+  ];
+
+  const paginationData = {
+    rowsPerPageText: "Lignes par page",
+    rangeSeparatorText: "sur",
+    selectAllRowsItem: true,
+    selectAllRowsItemText: "Tous",
+  };
 
   useEffect(() => {
     api
@@ -262,6 +355,10 @@ const Virement = () => {
     }, 1000);
   };
 
+  const formatDate = (date) => {
+    return date.split("T")[0];
+  };
+
   return (
     <div className="container-data">
       <form className="withdraw-form">
@@ -325,12 +422,12 @@ const Virement = () => {
 
       <div className="transaction-history">
         <div className="history-toolbar">
-          <input type="text" placeholder="Rechercher..." />
-          <div className="actions">
+          <h2>Historique des transactions</h2>
+          {/* <div className="actions">
             <button onClick={generatePDF}>📄 Exporter en PDF</button>
             <button>📊 Exporter en Excel</button>
             <button>🖨️ Imprimer</button>
-          </div>
+          </div> */}
         </div>
 
         {/* <div className="transaction-list">
@@ -362,7 +459,7 @@ const Virement = () => {
           )}
         </div> */}
 
-        <table className="custom-table">
+        {/* <table className="custom-table">
           <thead>
             <tr>
               <th>Date</th>
@@ -376,7 +473,7 @@ const Virement = () => {
             {virementtData && virementtData.length > 0 ? (
               virementtData.map((item) => (
                 <tr key={item.NumOp}>
-                  <td>{item.DateOp}</td>
+                  <td>{formatDate(item.DateOp)}</td>
                   <td>{item.NumDest.replace(/(.{4})/g, "$1 ").trim()}</td>
                   <td>
                     {item.Montant.toLocaleString("fr-FR", {
@@ -415,7 +512,20 @@ const Virement = () => {
               </tr>
             )}
           </tbody>
-        </table>
+        </table> */}
+
+        <div style={{ maxWidth: "100%", overflowX: "auto" }}>
+          <DataTable
+            columns={columns}
+            data={virementtData}
+            pagination
+            responsive
+            highlightOnHover
+            customStyles={customStyles}
+            noDataComponent="Aucune donnée trouvée."
+            paginationComponentOptions={paginationData}
+          />
+        </div>
       </div>
     </div>
   );

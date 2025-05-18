@@ -14,9 +14,11 @@ import {
   faEyeSlash,
   faEye,
   faTimes,
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import { Tooltip } from "react-tooltip";
+import DataTable from "react-data-table-component";
 
 const Compte = () => {
   const [user, setUser] = useState({});
@@ -98,6 +100,144 @@ const Compte = () => {
         console.log("Uitlisateur non connecte: ", err);
       });
   }, []);
+
+  const customStyles = {
+    rows: {
+      style: {
+        minHeight: "60px",
+        fontSize: "15px",
+        borderBottom: "1px solid #eee",
+      },
+    },
+    headCells: {
+      style: {
+        backgroundColor: "#009879",
+        color: "white",
+        fontSize: "15px",
+        fontWeight: "600",
+        textTransform: "uppercase",
+      },
+    },
+    cells: {
+      style: {
+        padding: "12px",
+      },
+    },
+    pagination: {
+      style: {
+        borderTop: "1px solid #eee",
+        padding: "10px",
+        fontSize: "15px",
+        // justifyContent: "center",
+      },
+    },
+  };
+
+  const columns = [
+    {
+      name: "Numero compte",
+      selector: (row) => (
+        <div
+          data-tooltip-content={`Client : ${
+            row.Client.Nom +
+            " " +
+            row.Client.Prenom +
+            " (" +
+            row.Client.Telephone +
+            ") "
+          }`}
+          data-tooltip-id="numCompte"
+        >
+          {row.NumCompte.replace(/(.{4})/g, "$1 ").trim()}
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Date d'ouverture",
+      selector: (row) => row.DateOuverture.split("T")[0],
+      sortable: true,
+    },
+    {
+      name: "Type",
+      selector: (row) => row.Discriminator,
+      sortable: true,
+    },
+    {
+      name: "Solde",
+      selector: (row) =>
+        `${row.Solde.toLocaleString("fr-FR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })} Ar`,
+      sortable: true,
+      // right: true,
+    },
+    {
+      name: "Decouverte",
+      selector: (row) =>
+        `${row.Decouvert.toLocaleString("fr-FR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })} Ar`,
+      sortable: true,
+    },
+    {
+      name: "Taux",
+      selector: (row) => row.Taux,
+      sortable: true,
+    },
+    {
+      name: "Status",
+      selector: (row) => (
+        <div
+        // style={{
+        //   padding: "5px",
+        //   width: "70px",
+        //   backgroundColor: "green",
+        //   borderRadius: "5px",
+        //   color: "white",
+        // }}
+        >
+          {row.StatusCompte}
+        </div>
+      ),
+      sortable: true,
+    },
+
+    {
+      name: "Actions",
+      cell: (row) => (
+        <div
+          style={{
+            color: "red",
+            fontSize: "20px",
+          }}
+        >
+          <FontAwesomeIcon
+            style={{ color: "black" }}
+            onClick={() => openEditModal(row)}
+            icon={faEdit}
+          />
+          &nbsp;&nbsp;&nbsp;
+          <FontAwesomeIcon
+            onClick={() => deleteCompte(row.NumCompte)}
+            icon={faTrash}
+          />
+        </div>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      // button: true,
+    },
+  ];
+
+  const paginationData = {
+    rowsPerPageText: "Lignes par page",
+    rangeSeparatorText: "sur",
+    selectAllRowsItem: true,
+    selectAllRowsItemText: "Tous",
+  };
 
   const loadCompteData = () => {
     api.get(`/utilisateurs/compte`).then((rep) => {
@@ -309,7 +449,7 @@ const Compte = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredClients = compteData.filter((compte) =>
+  const filteredCompte = compteData.filter((compte) =>
     (
       compte.NumCompte +
       " " +
@@ -317,7 +457,7 @@ const Compte = () => {
       " " +
       compte.Solde +
       " " +
-      compte.Discriminatorr +
+      compte.Discriminator +
       " " +
       compte.Decouvert +
       " " +
@@ -326,6 +466,10 @@ const Compte = () => {
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
   );
+
+  const formatDate = (date) => {
+    return date.split("T")[0];
+  };
 
   return (
     <div className="container-data">
@@ -567,32 +711,9 @@ const Compte = () => {
               <button onClick={openModal}>
                 {" "}
                 <FontAwesomeIcon icon={faPlus} />
-                &nbsp;&nbsp; Ajouter client
+                &nbsp;&nbsp; Nouveau compte
               </button>
-
-              <div style={{ paddingTop: "10px" }}>
-                <input
-                  style={{
-                    padding: "12px",
-                    width: "100%",
-                    marginBottom: "10px",
-                  }}
-                  type="text"
-                  placeholder="Recherche"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
             </div>
-            {/* <Select
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  width: 250,
-                }),
-              }}
-              options={options}
-            /> */}
           </div>
 
           {/* <div className="actions">
@@ -608,7 +729,7 @@ const Compte = () => {
           </div> */}
         </div>
 
-        <table className="custom-table">
+        {/* <table className="custom-table">
           <thead>
             <tr>
               <th>DATE OUVERTURE</th>
@@ -637,7 +758,7 @@ const Compte = () => {
                   data-tooltip-id="numCompte"
                   key={item.NumCompte}
                 >
-                  <td>{item.DateOuverture}</td>
+                  <td>{formatDate(item.DateOuverture)}</td>
                   <td>{item.NumCompte.replace(/(.{4})/g, "$1 ").trim()}</td>
                   <td>
                     {item.Solde.toLocaleString("fr-FR", {
@@ -662,14 +783,10 @@ const Compte = () => {
                     style={{
                       color: "red",
                       fontSize: "20px",
-                      // textAlign: "center",
+                     
                     }}
                   >
-                    {/* <FontAwesomeIcon
-                      style={{ color: "black" }}
-                      // onClick={() => openEditModal(item)}
-                      icon={faEye}
-                    /> */}
+                   
                     &nbsp;&nbsp;&nbsp;
                     <FontAwesomeIcon
                       style={{ color: "black" }}
@@ -699,7 +816,36 @@ const Compte = () => {
               </tr>
             )}
           </tbody>
-        </table>
+        </table> */}
+
+        <div style={{ maxWidth: "100%", overflowX: "auto" }}>
+          <DataTable
+            columns={columns}
+            data={filteredCompte}
+            pagination
+            responsive
+            highlightOnHover
+            customStyles={customStyles}
+            noDataComponent="Aucune donnée trouvée."
+            paginationComponentOptions={paginationData}
+            subHeader
+            subHeaderComponent={
+              <input
+                type="text"
+                placeholder="🔍 Rechercher..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                  width: "300px",
+                }}
+              />
+            }
+          />
+        </div>
+
         <Tooltip
           id="numCompte"
           place="end"

@@ -13,8 +13,41 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
+import DataTable from "react-data-table-component";
 
 const Pret = () => {
+  const customStyles = {
+    rows: {
+      style: {
+        minHeight: "60px",
+        fontSize: "15px",
+        borderBottom: "1px solid #eee",
+      },
+    },
+    headCells: {
+      style: {
+        backgroundColor: "#009879",
+        color: "white",
+        fontSize: "15px",
+        fontWeight: "600",
+        textTransform: "uppercase",
+      },
+    },
+    cells: {
+      style: {
+        padding: "12px",
+      },
+    },
+    pagination: {
+      style: {
+        borderTop: "1px solid #eee",
+        padding: "10px",
+        fontSize: "15px",
+        // justifyContent: "center",
+      },
+    },
+  };
+
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
   const [pret, setPret] = useState({
@@ -28,6 +61,66 @@ const Pret = () => {
 
   const [numCompte, setNumCompte] = useState("");
   const [pretData, setPretData] = useState([]);
+
+  const columns = [
+    {
+      name: "Date",
+      selector: (row) => formatDate(row.DateOp),
+      sortable: true,
+    },
+    {
+      name: "Motif",
+      selector: (row) => row.Motif,
+      sortable: true,
+    },
+    {
+      name: "Montant",
+      selector: (row) =>
+        `${row.Montant.toLocaleString("fr-FR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })} Ar`,
+      sortable: true,
+      // right: true,
+    },
+    {
+      name: "Status",
+      selector: (row) => (
+        <div
+        // style={{
+        //   padding: "5px",
+        //   width: "70px",
+        //   backgroundColor: "green",
+        //   borderRadius: "5px",
+        //   color: "white",
+        // }}
+        >
+          {row.StatusP}
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      name: "Actions",
+      cell: (row) => (
+        <FontAwesomeIcon
+          icon={faTimes}
+          style={{ color: "red", fontSize: "20px", cursor: "pointer" }}
+          onClick={() => deleteHistorique(row.NumOp)}
+        />
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+  ];
+
+  const paginationData = {
+    rowsPerPageText: "Lignes par page",
+    rangeSeparatorText: "sur",
+    selectAllRowsItem: true,
+    selectAllRowsItemText: "Tous",
+  };
 
   useEffect(() => {
     api
@@ -184,6 +277,10 @@ const Pret = () => {
     ? pretData.filter((item) => item.StatusP === selectedStatus)
     : pretData;
 
+  const formatDate = (date) => {
+    return date.split("T")[0];
+  };
+
   return (
     <div className="container-data">
       {/* <h2>Formulaire de Demande de Pret</h2> */}
@@ -268,21 +365,27 @@ const Pret = () => {
 
       <div className="transaction-history">
         <div className="history-toolbar">
-          <div style={{ width: "250px", marginBottom: "15px" }}>
-            <Select
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  width: 250,
-                }),
-              }}
-              options={options}
-              placeholder="Filtrer par statut"
-              onChange={(option) =>
-                setSelectedStatus(option ? option.value : null)
-              }
-              isClearable
-            />
+          <div
+            className="flex"
+            style={{ display: "flex", justifyContent: "space-between" }}
+          >
+            {/* <h2>Historique de demande</h2> */}
+            <div style={{ width: "250px", marginBottom: "15px" }}>
+              <Select
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    width: 250,
+                  }),
+                }}
+                options={options}
+                placeholder="Filtrer par statut"
+                onChange={(option) =>
+                  setSelectedStatus(option ? option.value : null)
+                }
+                isClearable
+              />
+            </div>
           </div>
 
           {/* <div className="actions">
@@ -298,7 +401,7 @@ const Pret = () => {
           </div> */}
         </div>
 
-        <table className="custom-table">
+        {/* <table className="custom-table">
           <thead>
             <tr>
               <th>Date</th>
@@ -312,7 +415,7 @@ const Pret = () => {
             {filteredPretData && filteredPretData.length > 0 ? (
               filteredPretData.map((item) => (
                 <tr key={item.NumOp}>
-                  <td>{item.DateOp}</td>
+                  <td>{formatDate(item.DateOp)}</td>
                   <td>{item.Motif}</td>
                   <td>
                     {item.Montant.toLocaleString("fr-FR", {
@@ -351,7 +454,20 @@ const Pret = () => {
               </tr>
             )}
           </tbody>
-        </table>
+        </table> */}
+
+        <div style={{ maxWidth: "100%", overflowX: "auto" }}>
+          <DataTable
+            columns={columns}
+            data={filteredPretData}
+            pagination
+            responsive
+            highlightOnHover
+            customStyles={customStyles}
+            noDataComponent="Aucune donnée trouvée."
+            paginationComponentOptions={paginationData}
+          />
+        </div>
       </div>
     </div>
   );

@@ -1,40 +1,23 @@
-/* .form-group{
-    text-align: start;
-    padding: 10px;
-    color: white;
-}
-
-.form-group input, textarea{
-    width: 500px;
-    padding: 10px;
-    border-radius: 10px;
-    background-color: white;
-    color: gray;
-}
-
-.form-group .col-form{
-    padding-bottom: 20px;
-    color: black;
-} */
-
-
-
 .container-data {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family: 'Segoe UI', sans-serif;
+  /* max-width: 1200px; */
+  /* margin: 0 auto; */
+  /* padding: 1.5rem; */
+  padding-top: 1.5rem;
+  /* font-family: 'Segoe UI', sans-serif; */
   color: #333;
 }
 
 /* Formulaire */
 .withdraw-form {
-    text-align: start;
+  text-align: start;
   background: #fff;
   padding: 2rem;
   border-radius: 15px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .withdraw-form h2 {
@@ -45,12 +28,13 @@
 
 .withdraw-form input,
 .withdraw-form textarea {
-  width: calc(100% - 40px);
+  width: 100%; 
   padding: 12px;
   margin-bottom: 1rem;
-  border: 1px solid #ccc;
+  border: 1px ridge #ccc;
   border-radius: 8px;
   font-size: 1rem;
+  box-sizing: border-box;
   transition: 0.3s;
 }
 
@@ -98,6 +82,7 @@
   border: 1px solid #ccc;
   flex: 1;
   min-width: 100px;
+  max-width: 200px;
   margin-right: 1rem;
 }
 
@@ -113,26 +98,4 @@
 
 .actions button:hover {
   background: #e0e0e0;
-}
-
-/* Tableau */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-table thead {
-  background-color: #00bfa6;
-  color: white;
-}
-
-table th,
-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
-table tbody tr:hover {
-  background-color: #f9f9f9;
 }

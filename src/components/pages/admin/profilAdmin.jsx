@@ -1,12 +1,16 @@
 import React, { use, useEffect, useState } from "react";
 import "../../../assets/css/profil.css";
 import api from "../../api/api";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const Profil = () => {
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
   const [oldPass, setOldPass] = useState("");
   const [newPass, setNewPass] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     api
@@ -65,14 +69,40 @@ const Profil = () => {
   };
 
   const deleteAccount = () => {
-    api
-      .delete(`/utilisateurs/utilisateur/${user.email}`)
-      .then((rep) => {
-        console.log("Compte supprimé avec succès");
-      })
-      .catch((err) => {
-        console.log("Erreur lors de la suppression du compte: ", err);
-      });
+    Swal.fire({
+      title: "Êtes-vous sûr ?",
+      text: "Cette action est irréversible. Votre compte sera définitivement supprimé.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Oui, supprimer",
+      cancelButtonText: "Annuler",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        api
+          .delete(`/utilisateurs/utilisateur/${user.email}`)
+          .then(() => {
+            if (rep.data.success) {
+              Swal.fire(
+                "Supprimé !",
+                "Votre compte a été supprimé avec succès.",
+                "success"
+              );
+              localStorage.removeItem("token");
+              navigate("/login");
+            }
+          })
+          .catch((err) => {
+            console.log("Erreur lors de la suppression du compte: ", err);
+            Swal.fire(
+              "Erreur",
+              "Une erreur s’est produite lors de la suppression du compte.",
+              "error"
+            );
+          });
+      }
+    });
   };
 
   return (
@@ -135,7 +165,9 @@ const Profil = () => {
       </section> */}
       <section className="danger-zone">
         <h3>Zone sensible</h3>
-        <button className="btn btn-danger">Supprimer mon compte</button>
+        <button className="btn btn-danger" onClick={deleteAccount}>
+          Supprimer mon compte
+        </button>
       </section>
     </div>
   );

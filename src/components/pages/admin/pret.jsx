@@ -17,6 +17,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import { Tooltip } from "react-tooltip";
+import DataTable from "react-data-table-component";
 
 const Pret = () => {
   const [user, setUser] = useState({});
@@ -31,6 +32,133 @@ const Pret = () => {
 
   const [numCompte, setNumCompte] = useState("");
   const [pretData, setPretData] = useState([]);
+
+  const customStyles = {
+    rows: {
+      style: {
+        minHeight: "60px",
+        fontSize: "15px",
+        borderBottom: "1px solid #eee",
+      },
+    },
+    headCells: {
+      style: {
+        backgroundColor: "#009879",
+        color: "white",
+        fontSize: "15px",
+        fontWeight: "600",
+        textTransform: "uppercase",
+      },
+    },
+    cells: {
+      style: {
+        padding: "12px",
+      },
+    },
+    pagination: {
+      style: {
+        borderTop: "1px solid #eee",
+        padding: "10px",
+        fontSize: "15px",
+        // justifyContent: "center",
+      },
+    },
+  };
+
+  const columns = [
+    {
+      name: "Numero compte",
+      selector: (row) => formatDate(row.DateOp),
+      sortable: true,
+    },
+    {
+      name: "Date d'envoie",
+      selector: (row) => row.DateOp,
+      sortable: true,
+    },
+    {
+      name: "Motif",
+      selector: (row) => row.Motif,
+      sortable: true,
+    },
+    {
+      name: "Montant demande",
+      selector: (row) =>
+        `${row.Montant.toLocaleString("fr-FR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })} Ar`,
+      sortable: true,
+      // right: true,
+    },
+    {
+      name: "Status",
+      selector: (row) => (
+        <div
+        // style={{
+        //   padding: "5px",
+        //   width: "70px",
+        //   backgroundColor: "green",
+        //   borderRadius: "5px",
+        //   color: "white",
+        // }}
+        >
+          {row.StatusP}
+        </div>
+      ),
+      sortable: true,
+    },
+
+    {
+      name: "Actions",
+      cell: (row) => (
+        <select
+          style={{
+            padding: "10px",
+            fontSize: "17px",
+            borderRadius: "5px",
+            width: "100%",
+            backgroundColor: "#fffcc8",
+            border: "1px solid #ccc",
+          }}
+          onChange={(e) => updatePret(row.NumOp, e.target.value)}
+          defaultValue=""
+        >
+          <option value="" disabled>
+            Choisir
+          </option>
+          <option
+            value="Accepte"
+            disabled={row.StatusP === "Accepte" || row.StatusP === "Refuse"}
+          >
+            <FontAwesomeIcon icon={faCheck} />
+            Accepter
+          </option>
+          <option
+            value="Refuse"
+            disabled={row.StatusP === "Accepte" || row.StatusP === "Refuse"}
+          >
+            <FontAwesomeIcon icon={faTimes} />
+            Refuser
+          </option>
+          <option value="Supprimer">
+            <FontAwesomeIcon icon={faTrash} />
+            Supprimer
+          </option>
+        </select>
+      ),
+      // ignoreRowClick: true,
+      // allowOverflow: true,
+      // button: true,
+    },
+  ];
+
+  const paginationData = {
+    rowsPerPageText: "Lignes par page",
+    rangeSeparatorText: "sur",
+    selectAllRowsItem: true,
+    selectAllRowsItemText: "Tous",
+  };
 
   useEffect(() => {
     api
@@ -164,6 +292,10 @@ const Pret = () => {
     ? pretData.filter((item) => item.StatusP === selectedStatus)
     : pretData;
 
+  const formatDate = (date) => {
+    return date.split("T")[0];
+  };
+
   return (
     <div className="container-data">
       <h2 style={{ textAlign: "start" }}>Liste des demandes de prêt reçues</h2>
@@ -172,12 +304,12 @@ const Pret = () => {
         <div className="history-toolbar">
           <div style={{ width: "250px", marginBottom: "15px" }}>
             <Select
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  width: 250,
-                }),
-              }}
+              // styles={{
+              //   control: (base) => ({
+              //     ...base,
+              //     width: 250,
+              //   }),
+              // }}
               options={options}
               placeholder="Filtrer par statut"
               onChange={(option) =>
@@ -188,14 +320,14 @@ const Pret = () => {
           </div>
         </div>
 
-        <table className="custom-table">
+        {/* <table className="custom-table">
           <thead>
             <tr>
               <th>NUMERO COMPTE</th>
               <th>DATE D'ENVOIE</th>
               <th>MOTIF</th>
               <th>MONTANT A DEMANDER</th>
-              {/* <th>CLIENT</th> */}
+
               <th>STATUS</th>
               <th>ACTIONS</th>
             </tr>
@@ -203,15 +335,9 @@ const Pret = () => {
           <tbody>
             {filteredPretData && filteredPretData.length > 0 ? (
               filteredPretData.map((item) => (
-                <tr
-                  // data-tooltip-content={`Client : ${
-                  //   item.Client.Nom + " " + item.Client.Prenom
-                  // }`}
-                  // data-tooltip-id="numCompte"
-                  key={item.NumOp}
-                >
+                <tr key={item.NumOp}>
                   <td>{item.NumCompte.replace(/(.{4})/g, "$1 ").trim()}</td>
-                  <td>{item.DateOp}</td>
+                  <td>{formatDate(item.DateOp)}</td>
                   <td>{item.Motif}</td>
                   <td>
                     {item.Montant.toLocaleString("fr-FR", {
@@ -280,7 +406,20 @@ const Pret = () => {
               </tr>
             )}
           </tbody>
-        </table>
+        </table> */}
+
+        <div style={{ maxWidth: "100%", overflowX: "auto" }}>
+          <DataTable
+            columns={columns}
+            data={filteredPretData}
+            pagination
+            responsive
+            highlightOnHover
+            customStyles={customStyles}
+            noDataComponent="Aucune donnée trouvée."
+            paginationComponentOptions={paginationData}
+          />
+        </div>
 
         <Tooltip
           id="numCompte"

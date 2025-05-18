@@ -83,6 +83,10 @@ const Dashboard = () => {
     getCurrentOperations();
   }, []);
 
+  const formatDate = (date) => {
+    return date.split("T")[0];
+  };
+
   return (
     // <div className="container">
 
@@ -172,34 +176,6 @@ const Dashboard = () => {
 
       <div>
         <div className="tableContent">
-          {/* <div className="connectivity">
-            <div className="card">
-              <span>Status de securite</span>
-              <br />
-              <br />
-              <span>
-                <i className="fa-solid fa-lock"></i>
-                &nbsp;&nbsp;Authentification 2FA:
-                <strong>Desactive</strong>
-              </span>{" "}
-              <br />
-              <br />
-              <strong>
-                <i className="fa-solid fa-mobile"></i> &nbsp;&nbsp;Appareil lie
-                : Redmi 6 Pro
-              </strong>
-              <br />
-              <br />
-              <span>
-                <i className="fa-solid fa-clock"></i> &nbsp;&nbsp;
-                <strong></strong>Derniere connection : <br /> le 01/02/2019
-                12:43:45
-              </span>
-              <br />
-              <br />
-            </div>
-          </div> */}
-
           <div className="table">
             <LineChart />
           </div>
@@ -221,7 +197,7 @@ const Dashboard = () => {
                 operationData.map((item) => (
                   <tr key={item.NumOp}>
                     <td>{item.NumCompte.replace(/(.{4})/g, "$1 ").trim()}</td>
-                    <td>{item.DateOp}</td>
+                    <td>{formatDate(item.DateOp)}</td>
                     <td>{item.Discriminator}</td>
                     <td>
                       {item.Montant.toLocaleString("fr-FR", {

@@ -14,6 +14,7 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
+import DataTable from "react-data-table-component";
 
 const Client = () => {
   const [user, setUser] = useState({});
@@ -48,6 +49,96 @@ const Client = () => {
     data.adresse = item.Adresse;
     data.telephone = item.Telephone;
     data.profession = item.Profession;
+  };
+
+  const customStyles = {
+    rows: {
+      style: {
+        minHeight: "60px",
+        fontSize: "15px",
+        borderBottom: "1px solid #eee",
+      },
+    },
+    headCells: {
+      style: {
+        backgroundColor: "#009879",
+        color: "white",
+        fontSize: "15px",
+        fontWeight: "600",
+        textTransform: "uppercase",
+      },
+    },
+    cells: {
+      style: {
+        padding: "12px",
+      },
+    },
+    pagination: {
+      style: {
+        borderTop: "1px solid #eee",
+        padding: "10px",
+        fontSize: "15px",
+        // justifyContent: "center",
+      },
+    },
+  };
+
+  const columns = [
+    {
+      name: "Cin",
+      selector: (row) => row.Cin,
+      sortable: true,
+    },
+    {
+      name: "Nom",
+      selector: (row) => row.Nom,
+      sortable: true,
+    },
+    {
+      name: "Prenom",
+      selector: (row) => row.Prenom,
+      sortable: true,
+    },
+    {
+      name: "Adresse",
+      selector: (row) => row.Adresse,
+      sortable: true,
+    },
+    {
+      name: "Telephone",
+      selector: (row) => row.Telephone,
+      sortable: true,
+    },
+    {
+      name: "Profession",
+      selector: (row) => row.Profession,
+      sortable: true,
+    },
+
+    {
+      name: "Actions",
+      cell: (row) => (
+        <div
+          style={{
+            // color: "red",
+            fontSize: "20px",
+            textAlign: "center",
+          }}
+        >
+          <FontAwesomeIcon icon={faEdit} onClick={() => openEditModal(row)} />
+        </div>
+      ),
+      ignoreRowClick: true,
+      // allowOverflow: true,
+      // button: true,
+    },
+  ];
+
+  const paginationData = {
+    rowsPerPageText: "Lignes par page",
+    rangeSeparatorText: "sur",
+    selectAllRowsItem: true,
+    selectAllRowsItemText: "Tous",
   };
 
   useEffect(() => {
@@ -596,20 +687,6 @@ const Client = () => {
                 <FontAwesomeIcon icon={faPlus} />
                 &nbsp;&nbsp; Ajouter client
               </button>
-
-              <div style={{ paddingTop: "10px" }}>
-                <input
-                  style={{
-                    padding: "12px",
-                    width: "100%",
-                    marginBottom: "10px",
-                  }}
-                  type="text"
-                  placeholder="Recherche"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
             </div>
             {/* <Select
               styles={{
@@ -635,10 +712,10 @@ const Client = () => {
           </div> */}
         </div>
 
-        <table className="custom-table">
+        {/* <table className="custom-table">
           <thead>
             <tr>
-              {/* <th>ID</th> */}
+              
               <th>CIN</th>
               <th>NOM</th>
               <th>PRENOM</th>
@@ -687,7 +764,35 @@ const Client = () => {
               </tr>
             )}
           </tbody>
-        </table>
+        </table> */}
+
+        <div style={{ maxWidth: "100%", overflowX: "auto" }}>
+          <DataTable
+            columns={columns}
+            data={filteredClients}
+            pagination
+            responsive
+            highlightOnHover
+            customStyles={customStyles}
+            noDataComponent="Aucune donnée trouvée."
+            paginationComponentOptions={paginationData}
+            subHeader
+            subHeaderComponent={
+              <input
+                type="text"
+                placeholder="🔍 Rechercher..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                  width: "300px",
+                }}
+              />
+            }
+          />
+        </div>
       </div>
     </div>
   );

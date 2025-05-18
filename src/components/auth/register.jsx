@@ -98,105 +98,118 @@ const Register = () => {
   };
 
   return (
-    <div className="container">
-      <img src={logo} width={100} height={100} alt="" />
+    <div className="wrapper">
+      <div className="container">
+        <img src={logo} width={100} height={100} alt="" />
 
-      <h2 style={{ fontSize: "35px" }}>Inscrivez-vous</h2>
-      {/* <span className="text-bold"></span> */}
+        <h2 style={{ fontSize: "35px" }}>Inscrivez-vous</h2>
+        {/* <span className="text-bold"></span> */}
 
-      <form action="">
-        <div className="row">
-          <label htmlFor="login">Adresse email</label>
+        <form action="">
+          <div className="row">
+            <label htmlFor="login">Adresse email</label>
 
-          <input
-            name="email"
-            value={userData.email}
-            onChange={handleChange}
-            type="email"
-            placeholder="exemple@gmail.com"
-          />
-        </div>
-        <div className="row">
-          <label htmlFor="phone">Numero Telephone</label>
+            <input
+              name="email"
+              value={userData.email}
+              onChange={handleChange}
+              type="email"
+              placeholder="exemple@gmail.com"
+            />
+          </div>
+          <div className="row">
+            <label htmlFor="phone">Numero Telephone</label>
 
-          <input
-            name="phone"
-            value={userData.phone}
-            onChange={handleChange}
-            type="text"
-            placeholder="+261 XX XX XXX XX"
-          />
-        </div>
+            <input
+              name="phone"
+              value={userData.phone}
+              onChange={handleChange}
+              type="text"
+              placeholder="+261 XX XX XXX XX"
+            />
+          </div>
 
-        <div className="row">
-          <label htmlFor="password">Mot de passe</label>
+          <div className="row">
+            <label htmlFor="password">Mot de passe</label>
 
-          <input
-            name="password"
-            value={userData.password}
-            onChange={handleChange}
-            type="password"
-            placeholder="******"
-          />
-        </div>
+            <input
+              name="password"
+              value={userData.password}
+              onChange={handleChange}
+              type="password"
+              placeholder="******"
+            />
+          </div>
 
-        <div className="row">
-          <label htmlFor="password">Confirmation</label>
+          <div className="row">
+            <label htmlFor="password">Confirmation</label>
 
-          <input
-            name="confirmPassword"
-            value={userData.confirmPassword}
-            onChange={handleChange}
-            type="password"
-            placeholder="******"
-          />
-        </div>
-        {phoneError && (
-          <span
-            style={{ color: "red", fontSize: "0.9em", textAlign: "center" }}
-          >
-            <FontAwesomeIcon icon={faExclamationCircle} />
-            &nbsp; {phoneError}
+            <input
+              name="confirmPassword"
+              value={userData.confirmPassword}
+              onChange={handleChange}
+              type="password"
+              placeholder="******"
+            />
+          </div>
+          {phoneError && (
+            <span
+              style={{ color: "red", fontSize: "0.9em", textAlign: "center" }}
+            >
+              <FontAwesomeIcon icon={faExclamationCircle} />
+              &nbsp; {phoneError}
+            </span>
+          )}
+          {passwordError && (
+            <span
+              style={{ color: "red", fontSize: "0.9em", textAlign: "center" }}
+            >
+              <FontAwesomeIcon icon={faExclamationCircle} />
+              &nbsp; Les mots de passe ne correspondent pas.
+            </span>
+          )}
+          <br />
+
+          <div className="row">
+            <button
+              onClick={() => {
+                register();
+                setUserData({
+                  email: "",
+                  phone: "+261",
+                  password: "",
+                  confirmPassword: "",
+                });
+              }}
+              type="button"
+            >
+              Creer compte
+            </button>
+          </div>
+
+          <br />
+
+          <span>
+            Avez-vous un compte?{" "}
+            <Link to="/login" className="text-bold">
+              {" "}
+              Se connecter
+            </Link>
           </span>
-        )}
-        {passwordError && (
-          <span
-            style={{ color: "red", fontSize: "0.9em", textAlign: "center" }}
-          >
-            <FontAwesomeIcon icon={faExclamationCircle} />
-            &nbsp; Les mots de passe ne correspondent pas.
+          <br />
+          <br />
+          <span>
+            <Link
+              to="/"
+              className="text-bold"
+              style={{ color: "blue", textDecoration: "underline" }}
+            >
+              {" "}
+              Retour a la page d'accueil
+            </Link>
           </span>
-        )}
-        <br />
-        <br />
-
-        <div className="row">
-          <button
-            onClick={() => {
-              register();
-              setUserData({
-                email: "",
-                phone: "+261",
-                password: "",
-                confirmPassword: "",
-              });
-            }}
-            type="button"
-          >
-            Creer compte
-          </button>
-        </div>
-
-        <br />
-
-        <span>
-          Avez-vous un compte?{" "}
-          <Link to="/" className="text-bold">
-            {" "}
-            Se connecter
-          </Link>
-        </span>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };

@@ -56,9 +56,11 @@ const Dashboard = () => {
     navigate(`/client/${path}`, replace);
   };
 
-  return (
-    // <div className="container">
+  const formatDate = (dateStr) => {
+    return dateStr.split("T")[0];
+  };
 
+  return (
     <div className="dash-content">
       <div className="card-body">
         <div className="card-box">
@@ -95,7 +97,7 @@ const Dashboard = () => {
                 color: "#333",
                 fontSize: "16px",
                 outline: "none",
-                width: "200px",
+                // width: "200px",
                 cursor: "pointer",
               }}
             >
@@ -111,9 +113,9 @@ const Dashboard = () => {
           <div className="child-card">
             <div className="item">
               <img src={moneybag} width={70} height={70} alt="" />
-              &nbsp;&nbsp;&nbsp;&nbsp;
+
               <div>
-                <span style={{ fontSize: "30px" }}>Solde actuel</span>
+                <span style={{ fontSize: "30px" }}>Balance</span>
                 <br />
                 <strong style={{ fontSize: "40px" }}>
                   {clientInfo.Solde !== undefined
@@ -125,9 +127,6 @@ const Dashboard = () => {
                 </strong>
               </div>
             </div>
-            {/* <div className="item">
-              <button type="button">Afficher historique</button>
-            </div> */}
           </div>
         </div>
 
@@ -152,14 +151,14 @@ const Dashboard = () => {
           {!numCompte ? (
             <p>Chargement...</p>
           ) : (
-            <div className="table">
+            <div className="graphic-view">
               <LineChartClient numCompte={numCompte} />
             </div>
           )}
         </div>
 
         <div className="table">
-          <h2>Resume des dernieres operations</h2>
+          <h2>Resume des dernieres trasanctions</h2>
           <table className="custom-table">
             <thead>
               <tr>
@@ -173,22 +172,22 @@ const Dashboard = () => {
               {listOperation && listOperation.length > 0 ? (
                 listOperation.map((item) => (
                   <tr key={item.NumOp}>
-                    <td>{item.DateOp}</td>
-                    <td>{item.Discriminator}</td>
-                    <td>
+                    <td data-label="Date">{formatDate(item.DateOp)}</td>
+                    <td data-label="Type">{item.Discriminator}</td>
+                    <td data-label="Montant">
                       {item.Montant.toLocaleString("fr-FR", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}{" "}
                       Ar
                     </td>
-                    <td>{item.StatusP}</td>
+                    <td data-label="Statut">{item.StatusP}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={4}
                     style={{
                       textAlign: "center",
                       fontStyle: "italic",
@@ -204,7 +203,6 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
-    // </div>
   );
 };
 

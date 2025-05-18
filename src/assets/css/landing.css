@@ -9,7 +9,8 @@
 .landing-header {
   background-color: #1e3a8a;
   color: white;
-  padding: 1.5rem 2rem;
+  padding: 0.5rem 2rem;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
