@@ -68,12 +68,12 @@ const Pret = () => {
   const columns = [
     {
       name: "Numero compte",
-      selector: (row) => formatDate(row.DateOp),
+      selector: (row) => row.NumCompte,
       sortable: true,
     },
     {
       name: "Date d'envoie",
-      selector: (row) => row.DateOp,
+      selector: (row) => formatDate(row.DateOp),
       sortable: true,
     },
     {
@@ -95,13 +95,20 @@ const Pret = () => {
       name: "Status",
       selector: (row) => (
         <div
-        // style={{
-        //   padding: "5px",
-        //   width: "70px",
-        //   backgroundColor: "green",
-        //   borderRadius: "5px",
-        //   color: "white",
-        // }}
+          style={{
+            padding: "4px",
+            width: "70px",
+            borderStyle: "none",
+            borderRadius: "7px",
+            color: "white",
+            backgroundColor:
+              row.StatusP === "Accepte"
+                ? "green"
+                : row.StatusP === "Refuse"
+                ? "red"
+                : "black",
+            fontWeight: "bold",
+          }}
         >
           {row.StatusP}
         </div>

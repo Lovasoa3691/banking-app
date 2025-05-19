@@ -19,6 +19,9 @@ import {
 import Select from "react-select";
 import { Tooltip } from "react-tooltip";
 import DataTable from "react-data-table-component";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const Compte = () => {
   const [user, setUser] = useState({});
@@ -471,6 +474,70 @@ const Compte = () => {
     return date.split("T")[0];
   };
 
+  const ExporterExcel = () => {
+    if (compteData.length > 0) {
+      const donnees = compteData.map((compte) => ({
+        "Numéro de compte": compte.NumCompte,
+        Solde: compte.Solde,
+        Type: compte.Discriminator,
+        Découvert: compte.Decouvert || "N/A",
+        Taux: compte.Taux || "N/A",
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(donnees);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Comptes");
+      XLSX.writeFile(wb, "liste_comptes.xlsx");
+    } else {
+      swal("Désolé ! Aucun donnée à exporter", {
+        icon: "error",
+        buttons: {
+          confirm: {
+            className: "btn btn-success",
+          },
+        },
+      });
+    }
+  };
+
+  const ExporterPDF = () => {
+    const doc = new jsPDF();
+    const colonnes = ["NUM COMPTE", "SOLDE", "TYPE", "DECOUVERTE", "TAUX"];
+    const ligne = compteData.map((ligne) => [
+      ligne.NumCompte.replace(/(.{4})/g, "$1 ").trim(),
+      ligne.Solde.toLocaleString("fr-FR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+      ligne.Discriminator,
+      ligne.Decouvert.toLocaleString("fr-FR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+      ligne.Taux,
+    ]);
+
+    if (compteData.length > 0) {
+      doc.text(`Liste des comptes existants`, 15, 10);
+      doc.autoTable({
+        head: [colonnes],
+        body: ligne,
+        startY: 20,
+      });
+
+      doc.save(`liste_compte.pdf`);
+    } else {
+      swal(`Desole! Aucun donnee a exporter`, {
+        icon: "error",
+        buttons: {
+          confirm: {
+            className: "btn btn-success",
+          },
+        },
+      });
+    }
+  };
+
   return (
     <div className="container-data">
       <h2 style={{ textAlign: "start" }}>Liste des comptes ouverts</h2>
@@ -572,7 +639,7 @@ const Compte = () => {
 
               <div className="btn-save">
                 <button onClick={saveCompte} type="button">
-                  Enregistrer
+                  <FontAwesomeIcon icon={faSave} /> &nbsp;&nbsp; Enregistrer
                 </button>
               </div>
             </form>
@@ -689,7 +756,7 @@ const Compte = () => {
               </div>
               <div className="btn-save">
                 <button onClick={updateCompte} type="button">
-                  Mettre a jour
+                  <FontAwesomeIcon icon={faSave} /> &nbsp;&nbsp; Mettre a jour
                 </button>
               </div>
             </form>
@@ -700,15 +767,14 @@ const Compte = () => {
       <div className="transaction-history">
         <div className="history-toolbar">
           <div styles={{ width: "100px" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "730px",
-              }}
-            >
-              <button onClick={openModal}>
+            <div>
+              <button
+                style={{
+                  backgroundColor: "#182f90",
+                  color: "white",
+                }}
+                onClick={openModal}
+              >
                 {" "}
                 <FontAwesomeIcon icon={faPlus} />
                 &nbsp;&nbsp; Nouveau compte
@@ -716,17 +782,34 @@ const Compte = () => {
             </div>
           </div>
 
-          {/* <div className="actions">
-            <button>
-              <FontAwesomeIcon icon={faFilePdf} />
+          <div className="actions" style={{ display: "flex", gap: "10px" }}>
+            <button
+              onClick={ExporterPDF}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                backgroundColor: "transparent",
+                border: "1px ridge green",
+              }}
+            >
+              <FontAwesomeIcon style={{ color: "red" }} icon={faFilePdf} />
+              Exporter PDF
             </button>
-            <button>
-              <FontAwesomeIcon icon={faFileExcel} />
+            <button
+              onClick={ExporterExcel}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                backgroundColor: "transparent",
+                border: "1px ridge green",
+              }}
+            >
+              <FontAwesomeIcon style={{ color: "green" }} icon={faFileExcel} />
+              Exporter Excel
             </button>
-            <button>
-              <FontAwesomeIcon icon={faPrint} />
-            </button>
-          </div> */}
+          </div>
         </div>
 
         {/* <table className="custom-table">

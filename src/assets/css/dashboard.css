@@ -10,6 +10,8 @@
   box-shadow: 0 0 10px grey;
   background-color: white;
   overflow-y: auto;
+   color: black;
+   font-family: Arial, sans-serif;
 }
 
 
@@ -49,8 +51,9 @@
 
 
 .card-box:nth-child(3) button{
-    background-color: rgb(2, 2, 224);
+    background-color: #182f70;
     color: white;
+    font-weight: bold;
     border-radius: 10px;
     padding: 15px;
     width: 100%;
@@ -114,7 +117,7 @@
   /* min-width: 300px; */
   border-collapse: collapse;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  font-family: Arial, sans-serif;
+  
 }
 
 .custom-table thead {

@@ -15,6 +15,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import DataTable from "react-data-table-component";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const Client = () => {
   const [user, setUser] = useState({});
@@ -436,6 +439,73 @@ const Client = () => {
       .includes(searchTerm.toLowerCase())
   );
 
+  const ExporterExcel = () => {
+    if (clientData.length > 0) {
+      const donnees = clientData.map((client) => ({
+        Cin: client.Cin,
+        Nom: client.Nom,
+        Prenom: client.Prenom,
+        Adresse: client.Adresse,
+        Contact: client.Telephone,
+        Profession: client.Profession,
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(donnees);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Clients");
+      XLSX.writeFile(wb, "liste_clients.xlsx");
+    } else {
+      swal("Désolé ! Aucun donnée à exporter", {
+        icon: "error",
+        buttons: {
+          confirm: {
+            className: "btn btn-success",
+          },
+        },
+      });
+    }
+  };
+
+  const ExporterPDF = () => {
+    const doc = new jsPDF();
+    const colonnes = [
+      "NUM CIN",
+      "NOM",
+      "PRENOM",
+      "ADRESSE",
+      "TELEPHONE",
+      "PROFESSION",
+    ];
+    const ligne = clientData.map((ligne) => [
+      ligne.Cin.replace(/(.{3})/g, "$1 ").trim(),
+      ligne.Nom,
+      ligne.Prenom,
+      ligne.Adresse,
+      ligne.Telephone,
+      ligne.Profession,
+    ]);
+
+    if (clientData.length > 0) {
+      doc.text(`Liste de nos clients`, 15, 10);
+      doc.autoTable({
+        head: [colonnes],
+        body: ligne,
+        startY: 20,
+      });
+
+      doc.save(`liste_client.pdf`);
+    } else {
+      swal(`Desole! Aucun donnee a exporter`, {
+        icon: "error",
+        buttons: {
+          confirm: {
+            className: "btn btn-success",
+          },
+        },
+      });
+    }
+  };
+
   return (
     <div className="container-data">
       <h2 style={{ textAlign: "start" }}>Liste des clients enregistrés</h2>
@@ -550,11 +620,8 @@ const Client = () => {
                   onClick={() => {
                     saveClient();
                   }}
-                  style={{
-                    fontSize: "20px",
-                  }}
                 >
-                  <FontAwesomeIcon icon={faSave} />
+                  <FontAwesomeIcon icon={faSave} /> &nbsp;&nbsp; Enregistrer
                 </button>
               </div>
             </form>
@@ -659,11 +726,8 @@ const Client = () => {
                   onClick={() => {
                     updateClient();
                   }}
-                  style={{
-                    fontSize: "20px",
-                  }}
                 >
-                  <FontAwesomeIcon icon={faSave} />
+                  <FontAwesomeIcon icon={faSave} /> &nbsp;&nbsp; Modifier
                 </button>
               </div>
             </form>
@@ -674,42 +738,49 @@ const Client = () => {
       <div className="transaction-history">
         <div className="history-toolbar">
           <div styles={{ width: "100px" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "730px",
-              }}
-            >
-              <button onClick={openModal}>
+            <div>
+              <button
+                style={{
+                  backgroundColor: "#182f90",
+                  color: "white",
+                }}
+                onClick={openModal}
+              >
                 {" "}
                 <FontAwesomeIcon icon={faPlus} />
                 &nbsp;&nbsp; Ajouter client
               </button>
             </div>
-            {/* <Select
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  width: 250,
-                }),
-              }}
-              options={options}
-            /> */}
           </div>
 
-          {/* <div className="actions">
-            <button>
-              <FontAwesomeIcon icon={faFilePdf} />
+          <div className="actions" style={{ display: "flex", gap: "10px" }}>
+            <button
+              onClick={ExporterPDF}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                backgroundColor: "transparent",
+                border: "1px ridge green",
+              }}
+            >
+              <FontAwesomeIcon style={{ color: "red" }} icon={faFilePdf} />
+              Exporter PDF
             </button>
-            <button>
-              <FontAwesomeIcon icon={faFileExcel} />
+            <button
+              onClick={ExporterExcel}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                backgroundColor: "transparent",
+                border: "1px ridge green",
+              }}
+            >
+              <FontAwesomeIcon style={{ color: "green" }} icon={faFileExcel} />
+              Exporter Excel
             </button>
-            <button>
-              <FontAwesomeIcon icon={faPrint} />
-            </button>
-          </div> */}
+          </div>
         </div>
 
         {/* <table className="custom-table">

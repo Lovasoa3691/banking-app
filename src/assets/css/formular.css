@@ -40,12 +40,12 @@
 
 .withdraw-form input:focus,
 .withdraw-form textarea:focus {
-  border-color: #00bfa6;
+  border-color: #009879;
   outline: none;
 }
 
 .withdraw-form button {
-  background: #00bfa6;
+  background: #009879;
   color: white;
   padding: 12px;
   width: 150px;

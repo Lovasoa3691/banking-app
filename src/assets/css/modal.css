@@ -36,6 +36,12 @@
   border: 1px solid #ccc;
 }
 
+.modal form button{
+  background-color: #009879;
+  color: white;
+  font-weight: bold;
+}
+
 .modal h2{
     margin-bottom: 20px;
 }
