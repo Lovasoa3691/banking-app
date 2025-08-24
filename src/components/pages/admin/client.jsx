@@ -511,7 +511,7 @@ const Client = () => {
       <h2 style={{ textAlign: "start" }}>Liste des clients enregistrés</h2>
 
       {isActive && (
-        <div className="modal-overlay">
+        <div className="modal-overlay top-0 left-0">
           <div className="modal">
             <form className="">
               <div

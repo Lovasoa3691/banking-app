@@ -17,13 +17,13 @@ app.use(
 );
 app.use(
   session({
-    secret: "orion@3691", // 🔒 change-la en prod
+    secret: "orion@3691",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // true en HTTPS
+      secure: false, 
       httpOnly: true,
-      maxAge: 1000 * 60 * 60, // 1 heure
+      maxAge: 1000 * 60 * 60,
     },
   })
 );
@@ -31,7 +31,7 @@ app.use(
 app.use("/api/utilisateurs", utilisateurRoutes);
 app.use("/api/operations", operationRoutes);
 
-// Lancer le serveur
+
 app.listen(port, () => {
-  console.log(`🚀 Serveur en ligne sur http://localhost:${port}`);
+  console.log(`Serveur en ligne sur http://localhost:${port}`);
 });

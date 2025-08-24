@@ -81,13 +81,13 @@ const Virement = () => {
       name: "Status",
       selector: (row) => (
         <div
-        // style={{
-        //   padding: "5px",
-        //   width: "70px",
-        //   backgroundColor: "green",
-        //   borderRadius: "5px",
-        //   color: "white",
-        // }}
+          style={{
+            padding: "5px",
+            width: "70px",
+            backgroundColor: "green",
+            borderRadius: "5px",
+            color: "white",
+          }}
         >
           {row.StatusP}
         </div>

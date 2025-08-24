@@ -115,6 +115,7 @@ exports.doVirement = async (req, res) => {
       Montant: montant,
       NumDest: destinataire,
       Motif: motif,
+      StatusP: "Succes",
       DateOp: formattedDate,
       Discriminator: "Virement",
     };
