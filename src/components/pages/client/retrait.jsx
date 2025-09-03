@@ -46,7 +46,7 @@ const Retrait = () => {
   const [retraitData, setRetraitData] = useState([]);
   const [retrait, setRetrait] = useState({
     type: "Retrait",
-    montant: 0,
+    montant: "",
     numCompte: "",
     destinataire: "",
     motif: "",
@@ -126,7 +126,7 @@ const Retrait = () => {
       });
   }, []);
 
-  useEffect(() => {
+  const getAccount = () => {
     api
       .get(`/utilisateurs`)
       .then((rep) => {
@@ -139,6 +139,10 @@ const Retrait = () => {
       .catch((err) => {
         console.log("Compte non trouve: ", err);
       });
+  }
+
+  useEffect(() => {
+    getAccount();
   }, [user]);
 
   const loadRetraitData = () => {
@@ -150,8 +154,7 @@ const Retrait = () => {
   const resetData = () => {
     setRetrait({
       type: "Retrait",
-      montant: 0,
-      numCompte: "",
+      montant: "",
       motif: "",
       codePin: "",
       destinataire: "",
@@ -172,8 +175,11 @@ const Retrait = () => {
   const doRetrait = () => {
     const dataToSend = {
       ...retrait,
+      montant: parseInt(retrait.montant),
       destinataire: retrait.destinataire.replace(/\s/g, ""),
     };
+
+    if (dataToSend.destinataire && parseInt(dataToSend.montant) >= 2000 && dataToSend.codePin)
     api
       .post("/operations/retrait", dataToSend)
       .then((rep) => {
@@ -221,6 +227,7 @@ const Retrait = () => {
               generatePDF();
             }
           });
+          getAccount();
           loadRetraitData();
           resetData();
         });
@@ -389,6 +396,7 @@ const Retrait = () => {
           onChange={handleChangeCompteDest}
           maxLength={19}
           placeholder="Numéro de compte destinataire"
+          required
         />
         <input
           type="number"
@@ -397,6 +405,7 @@ const Retrait = () => {
           onChange={handleChange}
           placeholder="Montant a retirer"
           min="0"
+          required
         />
         <textarea
           name="motif"
@@ -408,6 +417,7 @@ const Retrait = () => {
           type="password"
           name="codePin"
           value={retrait.codePin}
+          required
           placeholder="Code PIN"
           inputMode="numeric" // affiche le pavé numérique sur mobile
           pattern="[0-9]*" // hint pour le navigateur

@@ -46,7 +46,7 @@ const Virement = () => {
     type: "Virement",
     date: new Date().toLocaleString("fr-FR"),
     titulaire: "",
-    montant: 0,
+    montant: "",
     numCompte: "",
     motif: "",
     destinataire: "",
@@ -127,7 +127,7 @@ const Virement = () => {
       });
   }, []);
 
-  useEffect(() => {
+  const getAccount = () => {
     api
       .get(`/utilisateurs`)
       .then((rep) => {
@@ -140,6 +140,10 @@ const Virement = () => {
       .catch((err) => {
         console.log("Compte non trouve: ", err);
       });
+  }
+
+  useEffect(() => {
+    getAccount();
   }, [user]);
 
   const loadVirementData = () => {
@@ -153,8 +157,7 @@ const Virement = () => {
       type: "Virement",
       date: new Date().toLocaleString("fr-FR"),
       titulaire: "",
-      montant: 0,
-      numCompte: "",
+      montant: "",
       motif: "",
       destinataire: "",
       codePin: "",
@@ -175,13 +178,64 @@ const Virement = () => {
       ...virement,
       destinataire: virement.destinataire.replace(/\s/g, ""),
     };
-    api
-      .post("/operations/virement", dataToSend)
-      .then((rep) => {
-        if (!rep.data.success) {
+
+    if (dataToSend.destinataire && parseInt(dataToSend.montant) >= 2000 && dataToSend.codePin){
+      api
+        .post("/operations/virement", dataToSend)
+        .then((rep) => {
+          if (!rep.data.success) {
+            swal({
+              title: "Erreur",
+              text: rep.data.message || "Une erreur s'est produite",
+              icon: "error",
+              buttons: {
+                confirm: {
+                  className: "btn btn-danger",
+                },
+              },
+            });
+            return;
+          }
+          swal({
+            title: "Succès",
+            text: rep.data.message,
+            icon: "success",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+                text: "OK",
+              },
+            },
+          }).then(() => {
+            swal({
+              title: "Impression du reçu",
+              text: "Souhaitez-vous imprimer le reçu ?",
+              icon: "info",
+              buttons: {
+                cancel: {
+                  text: "Non",
+                  visible: true,
+                  className: "btn btn-secondary",
+                },
+                confirm: {
+                  text: "Oui",
+                  className: "btn btn-primary",
+                },
+              },
+            }).then((willPrint) => {
+              if (willPrint) {
+                generatePDF();
+              }
+            });
+            getAccount();
+            loadVirementData();
+            resetData();
+          });
+        })
+        .catch((err) => {
           swal({
             title: "Erreur",
-            text: rep.data.message || "Une erreur s'est produite",
+            text: err.response?.data?.message || "Une erreur s'est produite",
             icon: "error",
             buttons: {
               confirm: {
@@ -189,55 +243,19 @@ const Virement = () => {
               },
             },
           });
-          return;
-        }
+        });
+      }else{
         swal({
-          title: "Succès",
-          text: rep.data.message,
-          icon: "success",
-          buttons: {
-            confirm: {
-              className: "btn btn-success",
-              text: "OK",
-            },
-          },
-        }).then(() => {
-          swal({
-            title: "Impression du reçu",
-            text: "Souhaitez-vous imprimer le reçu ?",
-            icon: "info",
+            title: "Erreur",
+            text:"Veuillez remplir les champs manquantes svp!",
+            icon: "error",
             buttons: {
-              cancel: {
-                text: "Non",
-                visible: true,
-                className: "btn btn-secondary",
-              },
               confirm: {
-                text: "Oui",
-                className: "btn btn-primary",
+                className: "btn btn-danger",
               },
             },
-          }).then((willPrint) => {
-            if (willPrint) {
-              generatePDF();
-            }
           });
-          loadVirementData();
-          resetData();
-        });
-      })
-      .catch((err) => {
-        swal({
-          title: "Erreur",
-          text: err.response?.data?.message || "Une erreur s'est produite",
-          icon: "error",
-          buttons: {
-            confirm: {
-              className: "btn btn-danger",
-            },
-          },
-        });
-      });
+      }
   };
 
   const deleteHistorique = (numOp) => {
@@ -268,7 +286,7 @@ const Virement = () => {
                 },
               },
             });
-            loadPretData();
+            loadVirementData();
           } else {
             swal(`${rep.data.message}`, {
               icon: "error",
@@ -278,7 +296,7 @@ const Virement = () => {
                 },
               },
             });
-            loadPretData();
+            loadVirementData();
           }
         });
       } else {

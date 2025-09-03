@@ -51,12 +51,12 @@ const Pret = () => {
   const [user, setUser] = useState({});
   const [clientInfo, setClientInfo] = useState({});
   const [pret, setPret] = useState({
-    montant: 0,
+    montant: "",
     numCompte: "",
     duree: "",
     motif: "",
     codePin: "",
-    revenu: 0,
+    revenu: "",
   });
 
   const [numCompte, setNumCompte] = useState("");
@@ -70,7 +70,7 @@ const Pret = () => {
     },
     {
       name: "Motif",
-      selector: (row) => row.Motif,
+      selector: (row) => row.Motif || "N/A",
       sortable: true,
     },
     {
@@ -140,7 +140,7 @@ const Pret = () => {
       });
   }, []);
 
-  useEffect(() => {
+  const getAccount = () => {
     api
       .get(`/utilisateurs`)
       .then((rep) => {
@@ -151,6 +151,10 @@ const Pret = () => {
       .catch((err) => {
         console.log("Compte non trouve: ", err);
       });
+  }
+
+  useEffect(() => {
+    getAccount();
   }, []);
 
   const loadPretData = () => {
@@ -162,7 +166,6 @@ const Pret = () => {
   const resetData = () => {
     setPret({
       montant: "",
-      numCompte: "",
       duree: "",
       motif: "",
       revenu: "",
@@ -207,6 +210,7 @@ const Pret = () => {
             },
           },
         });
+        getAccount();
         loadPretData();
         resetData();
       })
@@ -320,6 +324,7 @@ const Pret = () => {
           onChange={handleChange}
           placeholder="Montant du pret demande"
           min="0"
+          required
         />
         <input
           type="number"
@@ -327,6 +332,7 @@ const Pret = () => {
           value={pret.duree}
           onChange={handleChange}
           placeholder="Duree (en mois)"
+          required
         />
         <input
           type="number"
@@ -334,6 +340,7 @@ const Pret = () => {
           value={pret.revenu}
           onChange={handleChange}
           placeholder="Revenu mensuel"
+          required
         />
         <textarea
           name="motif"
@@ -348,6 +355,7 @@ const Pret = () => {
           value={pret.codePin}
           placeholder="Code PIN"
           inputMode="numeric"
+          required
           pattern="[0-9]*"
           maxLength={4}
           onChange={(e) => {
