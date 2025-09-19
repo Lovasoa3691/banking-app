@@ -38,7 +38,6 @@ const styles = {
 const Recu = ({
   titulaire,
   type,
-  date,
   destinataire,
   montant,
   numCompte,

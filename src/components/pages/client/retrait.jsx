@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import api from "../../api/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import html2pdf from "html2pdf.js";
 import Recu from "./recu";
 import { createRoot } from "react-dom/client";
 import DataTable from "react-data-table-component";
+import swal from "sweetalert";
 
 const Retrait = () => {
   const customStyles = {
@@ -139,7 +140,7 @@ const Retrait = () => {
       .catch((err) => {
         console.log("Compte non trouve: ", err);
       });
-  }
+  };
 
   useEffect(() => {
     getAccount();
@@ -179,14 +180,67 @@ const Retrait = () => {
       destinataire: retrait.destinataire.replace(/\s/g, ""),
     };
 
-    if (dataToSend.destinataire && parseInt(dataToSend.montant) >= 2000 && dataToSend.codePin)
-    api
-      .post("/operations/retrait", dataToSend)
-      .then((rep) => {
-        if (!rep.data.success) {
+    if (
+      dataToSend.destinataire &&
+      parseInt(dataToSend.montant) >= 2000 &&
+      dataToSend.codePin
+    )
+      api
+        .post("/operations/retrait", dataToSend)
+        .then((rep) => {
+          if (!rep.data.success) {
+            swal({
+              title: "Erreur",
+              text: rep.data.message || "Une erreur s'est produite",
+              icon: "error",
+              buttons: {
+                confirm: {
+                  className: "btn btn-danger",
+                },
+              },
+            });
+            return;
+          }
+          swal({
+            title: "Succès",
+            text: rep.data.message,
+            icon: "success",
+            buttons: {
+              confirm: {
+                className: "btn btn-success",
+                text: "OK",
+              },
+            },
+          }).then(() => {
+            swal({
+              title: "Impression du reçu",
+              text: "Souhaitez-vous imprimer le reçu ?",
+              icon: "info",
+              buttons: {
+                cancel: {
+                  text: "Non",
+                  visible: true,
+                  className: "btn btn-secondary",
+                },
+                confirm: {
+                  text: "Oui",
+                  className: "btn btn-primary",
+                },
+              },
+            }).then((willPrint) => {
+              if (willPrint) {
+                generatePDF();
+              }
+            });
+            getAccount();
+            loadRetraitData();
+            resetData();
+          });
+        })
+        .catch((err) => {
           swal({
             title: "Erreur",
-            text: rep.data.message || "Une erreur s'est produite",
+            text: err.response?.data?.message || "Une erreur s'est produite",
             icon: "error",
             buttons: {
               confirm: {
@@ -194,56 +248,7 @@ const Retrait = () => {
               },
             },
           });
-          return;
-        }
-        swal({
-          title: "Succès",
-          text: rep.data.message,
-          icon: "success",
-          buttons: {
-            confirm: {
-              className: "btn btn-success",
-              text: "OK",
-            },
-          },
-        }).then(() => {
-          swal({
-            title: "Impression du reçu",
-            text: "Souhaitez-vous imprimer le reçu ?",
-            icon: "info",
-            buttons: {
-              cancel: {
-                text: "Non",
-                visible: true,
-                className: "btn btn-secondary",
-              },
-              confirm: {
-                text: "Oui",
-                className: "btn btn-primary",
-              },
-            },
-          }).then((willPrint) => {
-            if (willPrint) {
-              generatePDF();
-            }
-          });
-          getAccount();
-          loadRetraitData();
-          resetData();
         });
-      })
-      .catch((err) => {
-        swal({
-          title: "Erreur",
-          text: err.response?.data?.message || "Une erreur s'est produite",
-          icon: "error",
-          buttons: {
-            confirm: {
-              className: "btn btn-danger",
-            },
-          },
-        });
-      });
   };
 
   const deleteHistorique = (numOp) => {
@@ -292,12 +297,6 @@ const Retrait = () => {
       }
     });
   };
-
-  const options = [
-    { value: "En attente", label: "En attente" },
-    { value: "Approuver", label: "Approuver" },
-    { value: "Refuse", label: "Refuse" },
-  ];
 
   const [numDest, setNumDest] = useState("");
 
@@ -419,9 +418,9 @@ const Retrait = () => {
           value={retrait.codePin}
           required
           placeholder="Code PIN"
-          inputMode="numeric" // affiche le pavé numérique sur mobile
-          pattern="[0-9]*" // hint pour le navigateur
-          maxLength={4} // si le code PIN est à 4 chiffres
+          inputMode="numeric" 
+          pattern="[0-9]*"
+          maxLength={4}
           onChange={(e) => {
             const onlyNums = e.target.value.replace(/\D/, "");
             setRetrait({ ...retrait, codePin: onlyNums });
@@ -435,78 +434,13 @@ const Retrait = () => {
         >
           Valider le retrait
         </button>
-        {/* &nbsp;&nbsp;&nbsp;
-        <button onClick={generatePDF} type="button">
-          Vider
-        </button> */}
+        
       </form>
 
       <div className="transaction-history">
         <div className="history-toolbar">
           <h2>Historiques de transactions</h2>
-          {/* <div className="actions">
-            <button>📄 Exporter en PDF</button>
-            <button>📊 Exporter en Excel</button>
-            <button>🖨️ Imprimer</button>
-          </div> */}
         </div>
-
-        {/* <div className="table-data">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Destinataire</th>
-                <th>Montant</th>
-                <th>Statut</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {retraitData && retraitData.length > 0 ? (
-                retraitData.map((item) => (
-                  <tr key={item.NumOp}>
-                    <td>{formatDate(item.DateOp)}</td>
-                    <td>{item.NumDest.replace(/(.{4})/g, "$1 ").trim()}</td>
-                    <td>
-                      {item.Montant.toLocaleString("fr-FR", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}{" "}
-                      Ar
-                    </td>
-                    <td>{item.StatusP}</td>
-                    <td
-                      style={{
-                        color: "red",
-                        fontSize: "20px",
-                        textAlign: "center",
-                      }}
-                    >
-                      <FontAwesomeIcon
-                        onClick={() => deleteHistorique(item.NumOp)}
-                        icon={faTimes}
-                      />
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={8}
-                    style={{
-                      textAlign: "center",
-                      fontStyle: "italic",
-                      padding: "20px",
-                    }}
-                  >
-                    Aucune donnée trouvée.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div> */}
 
         <div style={{ maxWidth: "100%", overflowX: "auto" }}>
           <DataTable

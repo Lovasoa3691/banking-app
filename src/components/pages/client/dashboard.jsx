@@ -133,15 +133,15 @@ const Dashboard = () => {
         <div className="card-box">
           <button type="button" onClick={() => changeMenu("virement")}>
             {" "}
-            <i className="fa-solid fa-chart-line"></i>&nbsp;&nbsp; Virement
+            <i className="fa-solid fa-chart-line"></i>&nbsp;&nbsp; Effectuer virement
           </button>
           &nbsp;&nbsp;
           <button type="button" onClick={() => changeMenu("retrait")}>
-            <i className="fa-solid fa-money-bill-wave"></i>&nbsp;&nbsp; Retrait
+            <i className="fa-solid fa-money-bill-wave"></i>&nbsp;&nbsp; Efectuer retrait
           </button>
           &nbsp;&nbsp;
           <button type="button" onClick={() => changeMenu("pret")}>
-            <i className="fa-solid fa-right-left"></i>&nbsp;&nbsp; Pret
+            <i className="fa-solid fa-right-left"></i>&nbsp;&nbsp; Demander pret
           </button>
         </div>
       </div>

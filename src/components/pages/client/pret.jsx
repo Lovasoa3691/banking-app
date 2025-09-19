@@ -1,17 +1,8 @@
-import axios from "axios";
 import { useState, useEffect } from "react";
 import api from "../../api/api";
 import swal from "sweetalert";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTrash,
-  faPrint,
-  faFilePdf,
-  faSave,
-  faFileExcel,
-  faShare,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faShare, faTimes } from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import DataTable from "react-data-table-component";
 
@@ -151,7 +142,7 @@ const Pret = () => {
       .catch((err) => {
         console.log("Compte non trouve: ", err);
       });
-  }
+  };
 
   useEffect(() => {
     getAccount();
@@ -402,74 +393,7 @@ const Pret = () => {
               />
             </div>
           </div>
-
-          {/* <div className="actions">
-            <button>
-              <FontAwesomeIcon icon={faFilePdf} />
-            </button>
-            <button>
-              <FontAwesomeIcon icon={faFileExcel} />
-            </button>
-            <button>
-              <FontAwesomeIcon icon={faPrint} />
-            </button>
-          </div> */}
         </div>
-
-        {/* <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Motif</th>
-              <th>Montant</th>
-              <th>Statut</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPretData && filteredPretData.length > 0 ? (
-              filteredPretData.map((item) => (
-                <tr key={item.NumOp}>
-                  <td>{formatDate(item.DateOp)}</td>
-                  <td>{item.Motif}</td>
-                  <td>
-                    {item.Montant.toLocaleString("fr-FR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}{" "}
-                    Ar
-                  </td>
-                  <td>{item.StatusP}</td>
-                  <td
-                    style={{
-                      color: "red",
-                      fontSize: "20px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      onClick={() => deleteHistorique(item.NumOp)}
-                      icon={faTimes}
-                    />
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={8}
-                  style={{
-                    textAlign: "center",
-                    fontStyle: "italic",
-                    padding: "20px",
-                  }}
-                >
-                  Aucune donnée trouvée.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table> */}
 
         <div style={{ maxWidth: "100%", overflowX: "auto" }}>
           <DataTable
