@@ -1,12 +1,88 @@
-# React + Vite
+# Application de Gestion de Comptes Bancaires
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Cette application permet la **gestion complète de comptes bancaires** avec deux espaces distincts : **Administrateur** et **Client**.  
+Elle a été développée pour simplifier la gestion des comptes, des prêts et des transactions bancaires en ligne.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Fonctionnalités principales
 
-## Expanding the ESLint configuration
+### Espace Administrateur
+L’administrateur dispose d’un tableau de bord complet lui permettant de :
+- 🔹 Créer, modifier et supprimer des comptes bancaires  
+- 🔹 Gérer les **demandes de prêt** reçues des clients (validation, rejet, etc.)  
+- 🔹 Consulter les **historiques de transactions** de chaque compte (retraits, dépôts, virements, transferts)
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Espace Client
+Chaque client dispose d’un accès sécurisé pour :
+- Effectuer des **opérations bancaires** :
+  - Retrait  
+  - Dépôt  
+  - Virement / Transfert vers d’autres comptes  
+- Faire une **demande de prêt**  
+- Consulter le **solde** et l’historique de ses transactions
+
+---
+
+## Technologies utilisées
+
+| Catégorie | Technologies |
+|------------|--------------|
+| **Frontend** | React.js |
+| **Backend** | Node.js |
+| **Base de données** | MySQL |
+| **Authentification** | JWT / Sessions |
+| **Autres outils** | Axios |
+
+---
+
+## Installation et exécution
+
+1. **Cloner le dépôt**
+   ```bash
+   git clone https://github.com/Lovasoa3691>/banking-app.git
+   cd banking-app
+   ```
+
+2. **Installer les dependances
+```bash
+  npm install
+  cd backend
+  npm install
+  }
+```
+
+3. **Configurer la base de données
+ ```bash
+ const sequelize = new Sequelize("banque", "ton_nom_utilisateur", "ton_mot_de_passe", {
+ host: "localhost",
+ dialect: "mysql",
+ logging: false,
+ })
+```
+
+4. **Migrations
+```bash
+  cd backend
+  node init-db.js
+```
+
+5. **Creer un compte admin pour test
+```bash
+  node scripts/CreerAdmin.js
+```
+
+6. **Lancer le server
+```bash
+  cd backend
+  npm run dev
+
+  # frontend
+  cd banking-app
+  npm run dev
+```
+
+
+
+
+
