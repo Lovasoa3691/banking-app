@@ -29,7 +29,7 @@ Chaque client dispose d’un accès sécurisé pour :
 | Catégorie | Technologies |
 |------------|--------------|
 | **Frontend** | React.js |
-| **Backend** | Node.js |
+| **Backend** | Node.js/Express.js |
 | **Base de données** | MySQL |
 | **Authentification** | JWT / Sessions |
 | **Autres outils** | Axios |
