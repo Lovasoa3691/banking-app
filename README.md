@@ -39,10 +39,10 @@ Chaque client dispose d’un accès sécurisé pour :
 ## Installation et exécution
 
 1. **Cloner le dépôt**
-   ```bash
-   git clone https://github.com/Lovasoa3691>/banking-app.git
-   cd banking-app
-   ```
+ ```bash
+ git clone https://github.com/Lovasoa3691>/banking-app.git
+ cd banking-app
+ ```
 
 2. **Installer les dependances
 ```bash
