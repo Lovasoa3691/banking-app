@@ -40,7 +40,7 @@ Chaque client dispose d’un accès sécurisé pour :
 
 1. **Cloner le dépôt**
  ```bash
- git clone https://github.com/Lovasoa3691>/banking-app.git
+ git clone https://github.com/Lovasoa3691/banking-app.git
  cd banking-app
  ```
 
